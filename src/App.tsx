@@ -3,6 +3,8 @@ import { Layout } from '@/components/layout';
 import { TaskDashboard, TaskViewer } from '@/components/tasks';
 import { PatientList, PatientProfile } from '@/components/patients';
 import { AnalyticsDashboard } from '@/components/analytics';
+import { PreEvaluationDashboard } from '@/components/pre-evaluations';
+import { SchedulingPage } from '@/components/scheduling/SchedulingPage';
 
 function App() {
   return (
@@ -13,8 +15,10 @@ function App() {
           <Route path="/patients" element={<PatientList />} />
           <Route path="/patients/:patientId" element={<PatientProfile />} />
           <Route path="/analytics" element={<AnalyticsDashboard />} />
+          <Route path="/pre-evaluations" element={<PreEvaluationDashboard />} />
         </Route>
         <Route path="/tasks/:taskId" element={<TaskViewer />} />
+        <Route path="/schedule/:token" element={<SchedulingPage />} />
       </Routes>
     </BrowserRouter>
   );

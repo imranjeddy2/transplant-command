@@ -1,25 +1,25 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Filter, Clock, CheckCircle2, AlertCircle, Circle, XCircle } from 'lucide-react';
-import { tasks } from '@/data/mockData';
-import type { Task, TaskStatus } from '@/types';
+import { Filter, Bell, Calendar, CheckCircle2, ShieldCheck, PhoneCall } from 'lucide-react';
+import { getAllPreEvaluations } from '@/data/mockData';
+import type { PreEvaluationStatus } from '@/types';
 
 const statusConfig: Record<
-  TaskStatus,
-  { label: string; color: string; bgColor: string; icon: typeof Circle }
+  PreEvaluationStatus,
+  { label: string; color: string; bgColor: string; icon: typeof Bell }
 > = {
-  review_needed: {
-    label: 'Review Needed',
-    color: 'text-primary',
-    bgColor: 'bg-primary/10',
-    icon: AlertCircle,
-  },
-  in_progress: {
-    label: 'In Progress',
+  notified: {
+    label: 'Notified',
     color: 'text-blue-600',
     bgColor: 'bg-blue-50',
-    icon: Clock,
+    icon: Bell,
+  },
+  scheduled: {
+    label: 'Scheduled',
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-50',
+    icon: Calendar,
   },
   completed: {
     label: 'Completed',
@@ -27,42 +27,43 @@ const statusConfig: Record<
     bgColor: 'bg-green-50',
     icon: CheckCircle2,
   },
-  pending: {
-    label: 'Pending',
-    color: 'text-gray-500',
-    bgColor: 'bg-gray-100',
-    icon: Circle,
-  },
-  cancelled: {
-    label: 'Cancelled',
-    color: 'text-gray-400',
-    bgColor: 'bg-gray-50',
-    icon: XCircle,
+  info_verified: {
+    label: 'Info Verified',
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-50',
+    icon: ShieldCheck,
   },
 };
 
-const taskTypeLabels: Record<Task['type'], string> = {
-  referral_review: 'Referral Review',
-  document_upload: 'Document Upload',
-  insurance_verification: 'Insurance Verification',
-  clinical_review: 'Clinical Review',
-};
+type FilterOption = 'all' | PreEvaluationStatus;
 
-type FilterOption = 'all' | TaskStatus;
-
-export function TaskDashboard() {
+export function PreEvaluationDashboard() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<FilterOption>('all');
 
-  const filteredTasks = filter === 'all' ? tasks : tasks.filter((t) => t.status === filter);
+  const preEvaluations = getAllPreEvaluations();
+  const filteredPreEvals =
+    filter === 'all' ? preEvaluations : preEvaluations.filter((pe) => pe.status === filter);
 
-  const handleTaskClick = (task: Task) => {
-    navigate(`/tasks/${task.id}`);
+  const handleRowClick = (patientId: string) => {
+    navigate(`/patients/${patientId}`, { state: { defaultTab: 'pre-eval', from: '/pre-evaluations' } });
   };
 
-  const formatTime = (dateString: string) => {
+  const formatDateTime = (dateString?: string) => {
+    if (!dateString) return '—';
     const date = new Date(dateString);
     const now = new Date();
+
+    // Check if it's in the future
+    if (date > now) {
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      });
+    }
+
     const diffMs = now.getTime() - date.getTime();
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
 
@@ -73,12 +74,26 @@ export function TaskDashboard() {
     return `${diffDays}d ago`;
   };
 
+  const getLastUpdated = (preEval: (typeof preEvaluations)[0]) => {
+    // Return the most recent timestamp based on status
+    if (preEval.verifiedAt) return preEval.verifiedAt;
+    if (preEval.completedAt) return preEval.completedAt;
+    if (preEval.scheduledCallTime) return preEval.scheduledCallTime;
+    if (preEval.scheduledAt) return preEval.scheduledAt;
+    return preEval.notifiedAt;
+  };
+
   return (
     <div className="p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-foreground">Tasks</h1>
-        <p className="text-muted-foreground mt-1">Manage and review transplant referral tasks</p>
+        <div className="flex items-center gap-3 mb-1">
+          <PhoneCall className="h-6 w-6 text-primary" />
+          <h1 className="text-2xl font-semibold text-foreground">Pre-Evaluations</h1>
+        </div>
+        <p className="text-muted-foreground mt-1">
+          Manage AI bot calls that collect patient information before clinical evaluation
+        </p>
       </div>
 
       {/* Filter Bar */}
@@ -89,7 +104,7 @@ export function TaskDashboard() {
             <span className="text-sm font-medium">Filter:</span>
           </div>
           <div className="flex gap-2">
-            {(['all', 'review_needed', 'in_progress', 'completed'] as FilterOption[]).map(
+            {(['all', 'scheduled', 'completed', 'info_verified'] as FilterOption[]).map(
               (option) => (
                 <button
                   key={option}
@@ -100,7 +115,7 @@ export function TaskDashboard() {
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   }`}
                 >
-                  {option === 'all' ? 'All Tasks' : statusConfig[option].label}
+                  {option === 'all' ? 'All' : statusConfig[option].label}
                 </button>
               )
             )}
@@ -108,7 +123,7 @@ export function TaskDashboard() {
         </div>
       </div>
 
-      {/* Task Table */}
+      {/* Pre-Evaluation Table */}
       <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
         <table className="w-full">
           <thead>
@@ -118,41 +133,38 @@ export function TaskDashboard() {
               </th>
               <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">MRN</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                Task Type
-              </th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
                 Status
               </th>
               <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                Created
+                Scheduled Time
               </th>
               <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                Referring
+                Duration
+              </th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                Last Updated
               </th>
             </tr>
           </thead>
           <tbody>
-            {filteredTasks.map((task, index) => {
-              const status = statusConfig[task.status];
+            {filteredPreEvals.map((preEval, index) => {
+              const status = statusConfig[preEval.status];
               const StatusIcon = status.icon;
 
               return (
                 <motion.tr
-                  key={task.id}
+                  key={preEval.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.03 }}
-                  onClick={() => handleTaskClick(task)}
+                  onClick={() => handleRowClick(preEval.patientId)}
                   className="border-b border-border last:border-0 cursor-pointer hover:bg-muted/50 transition-colors"
                 >
                   <td className="py-3 px-4">
-                    <span className="font-medium text-foreground">{task.patientName}</span>
+                    <span className="font-medium text-foreground">{preEval.patientName}</span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-sm text-muted-foreground font-mono">{task.mrn}</span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="text-sm text-foreground">{taskTypeLabels[task.type]}</span>
+                    <span className="text-sm text-muted-foreground font-mono">{preEval.mrn}</span>
                   </td>
                   <td className="py-3 px-4">
                     <span
@@ -164,12 +176,17 @@ export function TaskDashboard() {
                   </td>
                   <td className="py-3 px-4">
                     <span className="text-sm text-muted-foreground">
-                      {formatTime(task.createdAt)}
+                      {formatDateTime(preEval.scheduledCallTime)}
                     </span>
                   </td>
                   <td className="py-3 px-4">
                     <span className="text-sm text-muted-foreground">
-                      {task.referringProvider || '—'}
+                      {preEval.actualCallDuration ? `${preEval.actualCallDuration} min` : '—'}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4">
+                    <span className="text-sm text-muted-foreground">
+                      {formatDateTime(getLastUpdated(preEval))}
                     </span>
                   </td>
                 </motion.tr>
@@ -178,16 +195,16 @@ export function TaskDashboard() {
           </tbody>
         </table>
 
-        {filteredTasks.length === 0 && (
+        {filteredPreEvals.length === 0 && (
           <div className="py-12 text-center">
-            <p className="text-muted-foreground">No tasks found matching your filter.</p>
+            <p className="text-muted-foreground">No pre-evaluations found matching your filter.</p>
           </div>
         )}
       </div>
 
       {/* Summary */}
       <div className="mt-4 text-sm text-muted-foreground">
-        Showing {filteredTasks.length} of {tasks.length} tasks
+        Showing {filteredPreEvals.length} of {preEvaluations.length} pre-evaluations
       </div>
     </div>
   );

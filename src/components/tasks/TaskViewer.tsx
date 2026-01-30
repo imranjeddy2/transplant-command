@@ -10,9 +10,50 @@ import {
   Sparkles,
   Check,
   Loader2,
+  Clock,
+  CheckCircle2,
+  Circle,
+  XCircle,
+  AlertCircle,
 } from 'lucide-react';
-import { tasks, johnSmithExtraction, getPatientById } from '@/data/mockData';
-import type { ExtractionData, ConfidenceLevel } from '@/types';
+import { tasks, getPatientById, getExtractionDataByPatientId } from '@/data/mockData';
+import type { ExtractionData, ConfidenceLevel, TaskStatus } from '@/types';
+
+const statusConfig: Record<
+  TaskStatus,
+  { label: string; color: string; bgColor: string; icon: typeof Circle }
+> = {
+  review_needed: {
+    label: 'Review Needed',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
+    icon: AlertCircle,
+  },
+  in_progress: {
+    label: 'In Progress',
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50',
+    icon: Clock,
+  },
+  completed: {
+    label: 'Completed',
+    color: 'text-green-600',
+    bgColor: 'bg-green-50',
+    icon: CheckCircle2,
+  },
+  pending: {
+    label: 'Pending',
+    color: 'text-gray-500',
+    bgColor: 'bg-gray-100',
+    icon: Circle,
+  },
+  cancelled: {
+    label: 'Cancelled',
+    color: 'text-gray-400',
+    bgColor: 'bg-gray-50',
+    icon: XCircle,
+  },
+};
 
 type TabKey = 'patient' | 'coverage' | 'referring' | 'receiving' | 'diagnosis';
 
@@ -36,9 +77,10 @@ interface FormFieldProps {
   confidence: ConfidenceLevel;
   onChange: (value: string) => void;
   showAnimation?: boolean;
+  readOnly?: boolean;
 }
 
-function FormField({ label, value, confidence, onChange, showAnimation }: FormFieldProps) {
+function FormField({ label, value, confidence, onChange, showAnimation, readOnly }: FormFieldProps) {
   const [displayValue, setDisplayValue] = useState(showAnimation ? '' : value);
   const [animationComplete, setAnimationComplete] = useState(!showAnimation);
 
@@ -68,7 +110,12 @@ function FormField({ label, value, confidence, onChange, showAnimation }: FormFi
         type="text"
         value={inputValue}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full px-3 py-2 rounded-lg border text-sm transition-colors focus:ring-2 focus:ring-primary focus:border-primary ${
+        readOnly={readOnly}
+        className={`w-full px-3 py-2 rounded-lg border text-sm transition-colors ${
+          readOnly
+            ? 'bg-muted/50 cursor-default'
+            : 'focus:ring-2 focus:ring-primary focus:border-primary'
+        } ${
           confidence !== 'high'
             ? confidenceStyles[confidence]
             : 'border-border bg-background'
@@ -81,26 +128,34 @@ function FormField({ label, value, confidence, onChange, showAnimation }: FormFi
 export function TaskViewer() {
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabKey>('patient');
-  const [isExtracting, setIsExtracting] = useState(true);
-  const [showFields, setShowFields] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
-  const [extraction, setExtraction] = useState<ExtractionData>(johnSmithExtraction);
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = 4;
-
   const task = tasks.find((t) => t.id === taskId);
   const patient = task ? getPatientById(task.patientId) : null;
 
+  // Only show extraction animation for review_needed tasks
+  const needsExtraction = task?.status === 'review_needed';
+  const isReadOnly = task?.status === 'completed' || task?.status === 'cancelled';
+
+  const [activeTab, setActiveTab] = useState<TabKey>('patient');
+  const [isExtracting, setIsExtracting] = useState(needsExtraction);
+  const [showFields, setShowFields] = useState(!needsExtraction);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
+  const [extraction, setExtraction] = useState<ExtractionData>(() =>
+    getExtractionDataByPatientId(task?.patientId || '')
+  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = 4;
+
   useEffect(() => {
-    // Simulate AI extraction animation
-    const timer = setTimeout(() => {
-      setIsExtracting(false);
-      setShowFields(true);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
+    // Only simulate AI extraction animation for review_needed tasks
+    if (needsExtraction) {
+      const timer = setTimeout(() => {
+        setIsExtracting(false);
+        setShowFields(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [needsExtraction]);
 
   const updateField = (field: keyof ExtractionData, value: string) => {
     setExtraction((prev) => ({
@@ -185,14 +240,28 @@ export function TaskViewer() {
         </div>
 
         <AnimatePresence>
-          {showFields && (
+          {showFields && task && (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full"
+              className="flex items-center gap-3"
             >
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">AI Extracted</span>
+              {needsExtraction && (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-primary">AI Extracted</span>
+                </div>
+              )}
+              {(() => {
+                const status = statusConfig[task.status];
+                const StatusIcon = status.icon;
+                return (
+                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${status.bgColor}`}>
+                    <StatusIcon className={`h-4 w-4 ${status.color}`} />
+                    <span className={`text-sm font-medium ${status.color}`}>{status.label}</span>
+                  </div>
+                );
+              })()}
             </motion.div>
           )}
         </AnimatePresence>
@@ -242,7 +311,9 @@ export function TaskViewer() {
                 <h2 className="text-xl font-bold text-gray-800">
                   KIDNEY TRANSPLANT REFERRAL FORM
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">Midwest Nephrology Associates</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {extraction.referringOrganization.value || 'Nephrology Associates'}
+                </p>
               </div>
 
               <div className="space-y-6 text-sm">
@@ -250,13 +321,13 @@ export function TaskViewer() {
                   <div>
                     <p className="text-gray-500 text-xs uppercase mb-1">Patient Name</p>
                     <p className="border-b border-gray-300 pb-1 font-handwriting text-lg">
-                      John Smith
+                      {extraction.firstName.value} {extraction.lastName.value}
                     </p>
                   </div>
                   <div>
                     <p className="text-gray-500 text-xs uppercase mb-1">Date of Birth</p>
                     <p className="border-b border-gray-300 pb-1 font-handwriting text-lg">
-                      03/15/1958
+                      {extraction.dateOfBirth.value}
                     </p>
                   </div>
                 </div>
@@ -265,13 +336,13 @@ export function TaskViewer() {
                   <div>
                     <p className="text-gray-500 text-xs uppercase mb-1">Phone</p>
                     <p className="border-b border-gray-300 pb-1 font-handwriting text-lg">
-                      (555) 123-4567
+                      {extraction.phone.value}
                     </p>
                   </div>
                   <div>
                     <p className="text-gray-500 text-xs uppercase mb-1">SSN (Last 4)</p>
                     <p className="border-b border-gray-300 pb-1 font-handwriting text-lg">
-                      ***-**-4567
+                      {extraction.ssn.value}
                     </p>
                   </div>
                 </div>
@@ -279,7 +350,7 @@ export function TaskViewer() {
                 <div>
                   <p className="text-gray-500 text-xs uppercase mb-1">Address</p>
                   <p className="border-b border-gray-300 pb-1 font-handwriting text-lg">
-                    123 Oak Street, Chicago, IL 60601
+                    {extraction.address.value || '—'}
                   </p>
                 </div>
 
@@ -288,20 +359,26 @@ export function TaskViewer() {
                   <div className="grid grid-cols-4 gap-4">
                     <div>
                       <p className="text-gray-500 text-xs uppercase mb-1">GFR</p>
-                      <p className="border-b border-gray-300 pb-1 font-handwriting text-lg">18</p>
+                      <p className="border-b border-gray-300 pb-1 font-handwriting text-lg">
+                        {extraction.gfr.value}
+                      </p>
                     </div>
                     <div>
                       <p className="text-gray-500 text-xs uppercase mb-1">Creatinine</p>
-                      <p className="border-b border-gray-300 pb-1 font-handwriting text-lg">4.2</p>
+                      <p className="border-b border-gray-300 pb-1 font-handwriting text-lg">
+                        {extraction.creatinine.value}
+                      </p>
                     </div>
                     <div>
                       <p className="text-gray-500 text-xs uppercase mb-1">Blood Type</p>
-                      <p className="border-b border-gray-300 pb-1 font-handwriting text-lg">O+</p>
+                      <p className="border-b border-gray-300 pb-1 font-handwriting text-lg">
+                        {extraction.bloodType.value}
+                      </p>
                     </div>
                     <div>
                       <p className="text-gray-500 text-xs uppercase mb-1">BMI</p>
                       <p className="border-b border-gray-300 pb-1 font-handwriting text-lg">
-                        26.5
+                        {extraction.bmi.value}
                       </p>
                     </div>
                   </div>
@@ -310,7 +387,7 @@ export function TaskViewer() {
                 <div>
                   <p className="text-gray-500 text-xs uppercase mb-1">Primary Diagnosis</p>
                   <p className="border-b border-gray-300 pb-1 font-handwriting text-lg">
-                    CKD Stage 5 - Diabetic Nephropathy
+                    {extraction.primaryDiagnosis.value}
                   </p>
                 </div>
 
@@ -320,13 +397,13 @@ export function TaskViewer() {
                     <div>
                       <p className="text-gray-500 text-xs uppercase mb-1">Name</p>
                       <p className="border-b border-gray-300 pb-1 font-handwriting text-lg">
-                        Dr. Sarah Johnson
+                        {extraction.referringProviderName.value || '—'}
                       </p>
                     </div>
                     <div>
                       <p className="text-gray-500 text-xs uppercase mb-1">NPI</p>
                       <p className="border-b border-gray-300 pb-1 font-handwriting text-lg">
-                        1234567890
+                        {extraction.referringNpi.value || '—'}
                       </p>
                     </div>
                   </div>
@@ -388,14 +465,16 @@ export function TaskViewer() {
                           value={extraction.firstName.value}
                           confidence={extraction.firstName.confidence}
                           onChange={(v) => updateField('firstName', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                         <FormField
                           label="Last Name"
                           value={extraction.lastName.value}
                           confidence={extraction.lastName.confidence}
                           onChange={(v) => updateField('lastName', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
@@ -404,14 +483,16 @@ export function TaskViewer() {
                           value={extraction.dateOfBirth.value}
                           confidence={extraction.dateOfBirth.confidence}
                           onChange={(v) => updateField('dateOfBirth', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                         <FormField
                           label="SSN"
                           value={extraction.ssn.value}
                           confidence={extraction.ssn.confidence}
                           onChange={(v) => updateField('ssn', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                       </div>
                       <FormField
@@ -419,14 +500,16 @@ export function TaskViewer() {
                         value={extraction.phone.value}
                         confidence={extraction.phone.confidence}
                         onChange={(v) => updateField('phone', v)}
-                        showAnimation={showFields}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
                       />
                       <FormField
                         label="Address"
                         value={extraction.address.value}
                         confidence={extraction.address.confidence}
                         onChange={(v) => updateField('address', v)}
-                        showAnimation={showFields}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
                       />
                     </>
                   )}
@@ -439,14 +522,16 @@ export function TaskViewer() {
                           value={extraction.gfr.value}
                           confidence={extraction.gfr.confidence}
                           onChange={(v) => updateField('gfr', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                         <FormField
                           label="Creatinine (mg/dL)"
                           value={extraction.creatinine.value}
                           confidence={extraction.creatinine.confidence}
                           onChange={(v) => updateField('creatinine', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
@@ -455,14 +540,16 @@ export function TaskViewer() {
                           value={extraction.bloodType.value}
                           confidence={extraction.bloodType.confidence}
                           onChange={(v) => updateField('bloodType', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                         <FormField
                           label="BMI"
                           value={extraction.bmi.value}
                           confidence={extraction.bmi.confidence}
                           onChange={(v) => updateField('bmi', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                       </div>
                       <FormField
@@ -470,7 +557,8 @@ export function TaskViewer() {
                         value={extraction.primaryDiagnosis.value}
                         confidence={extraction.primaryDiagnosis.confidence}
                         onChange={(v) => updateField('primaryDiagnosis', v)}
-                        showAnimation={showFields}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
                       />
                       <div className="grid grid-cols-3 gap-4">
                         <FormField
@@ -478,21 +566,24 @@ export function TaskViewer() {
                           value={extraction.diabetes.value}
                           confidence={extraction.diabetes.confidence}
                           onChange={(v) => updateField('diabetes', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                         <FormField
                           label="Hypertension"
                           value={extraction.hypertension.value}
                           confidence={extraction.hypertension.confidence}
                           onChange={(v) => updateField('hypertension', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                         <FormField
                           label="Previous Transplants"
                           value={extraction.previousTransplants.value}
                           confidence={extraction.previousTransplants.confidence}
                           onChange={(v) => updateField('previousTransplants', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                       </div>
                       <div className="grid grid-cols-3 gap-4">
@@ -501,21 +592,24 @@ export function TaskViewer() {
                           value={extraction.onDialysis.value}
                           confidence={extraction.onDialysis.confidence}
                           onChange={(v) => updateField('onDialysis', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                         <FormField
                           label="Dialysis Start Date"
                           value={extraction.dialysisStartDate.value}
                           confidence={extraction.dialysisStartDate.confidence}
                           onChange={(v) => updateField('dialysisStartDate', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                         <FormField
                           label="Dialysis Type"
                           value={extraction.dialysisType.value}
                           confidence={extraction.dialysisType.confidence}
                           onChange={(v) => updateField('dialysisType', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                       </div>
                     </>
@@ -528,21 +622,24 @@ export function TaskViewer() {
                         value={extraction.referringProviderName.value}
                         confidence={extraction.referringProviderName.confidence}
                         onChange={(v) => updateField('referringProviderName', v)}
-                        showAnimation={showFields}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
                       />
                       <FormField
                         label="Organization"
                         value={extraction.referringOrganization.value}
                         confidence={extraction.referringOrganization.confidence}
                         onChange={(v) => updateField('referringOrganization', v)}
-                        showAnimation={showFields}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
                       />
                       <FormField
                         label="NPI"
                         value={extraction.referringNpi.value}
                         confidence={extraction.referringNpi.confidence}
                         onChange={(v) => updateField('referringNpi', v)}
-                        showAnimation={showFields}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
                       />
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
@@ -550,14 +647,16 @@ export function TaskViewer() {
                           value={extraction.referringPhone.value}
                           confidence={extraction.referringPhone.confidence}
                           onChange={(v) => updateField('referringPhone', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                         <FormField
                           label="Fax"
                           value={extraction.referringFax.value}
                           confidence={extraction.referringFax.confidence}
                           onChange={(v) => updateField('referringFax', v)}
-                          showAnimation={showFields}
+                          showAnimation={showFields && needsExtraction}
+                          readOnly={isReadOnly}
                         />
                       </div>
                     </>
@@ -570,21 +669,24 @@ export function TaskViewer() {
                         value={extraction.receivingProviderName.value}
                         confidence={extraction.receivingProviderName.confidence}
                         onChange={(v) => updateField('receivingProviderName', v)}
-                        showAnimation={showFields}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
                       />
                       <FormField
                         label="Organization"
                         value={extraction.receivingOrganization.value}
                         confidence={extraction.receivingOrganization.confidence}
                         onChange={(v) => updateField('receivingOrganization', v)}
-                        showAnimation={showFields}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
                       />
                       <FormField
                         label="NPI"
                         value={extraction.receivingNpi.value}
                         confidence={extraction.receivingNpi.confidence}
                         onChange={(v) => updateField('receivingNpi', v)}
-                        showAnimation={showFields}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
                       />
                     </>
                   )}
@@ -596,21 +698,24 @@ export function TaskViewer() {
                         value={extraction.insuranceCarrier.value}
                         confidence={extraction.insuranceCarrier.confidence}
                         onChange={(v) => updateField('insuranceCarrier', v)}
-                        showAnimation={showFields}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
                       />
                       <FormField
                         label="Policy Number"
                         value={extraction.policyNumber.value}
                         confidence={extraction.policyNumber.confidence}
                         onChange={(v) => updateField('policyNumber', v)}
-                        showAnimation={showFields}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
                       />
                       <FormField
                         label="Group Number"
                         value={extraction.groupNumber.value}
                         confidence={extraction.groupNumber.confidence}
                         onChange={(v) => updateField('groupNumber', v)}
-                        showAnimation={showFields}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
                       />
                     </>
                   )}
@@ -622,20 +727,31 @@ export function TaskViewer() {
           {/* Footer */}
           {showFields && (
             <div className="bg-card border-t border-border px-6 py-4">
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  'Continue'
-                )}
-              </button>
+              {isReadOnly ? (
+                <button
+                  onClick={() => navigate('/')}
+                  className="w-full py-2.5 bg-secondary text-secondary-foreground rounded-lg font-medium hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2"
+                >
+                  Back to Tasks
+                </button>
+              ) : (
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : needsExtraction ? (
+                    'Continue'
+                  ) : (
+                    'Save Changes'
+                  )}
+                </button>
+              )}
             </div>
           )}
         </div>

@@ -169,6 +169,39 @@ export interface ExtractionData {
   groupNumber: ExtractedField;
 }
 
+// Pre-Evaluation Types
+export type PreEvaluationStatus = 'notified' | 'scheduled' | 'completed' | 'info_verified';
+
+export interface MedicalHistoryInfo {
+  previousSurgeries: ExtractedField;
+  currentMedications: ExtractedField;
+  allergies: ExtractedField;
+  symptoms: ExtractedField;
+}
+
+export interface LifestyleInfo {
+  supportSystem: ExtractedField;
+  transportation: ExtractedField;
+  livingSituation: ExtractedField;
+  complianceHistory: ExtractedField;
+}
+
+export interface PreEvaluationData {
+  id: string;
+  patientId: string;
+  status: PreEvaluationStatus;
+  notifiedAt?: string;
+  scheduledAt?: string;
+  scheduledCallTime?: string;
+  completedAt?: string;
+  verifiedAt?: string;
+  actualCallDuration?: number;
+  medicalHistory?: MedicalHistoryInfo;
+  lifestyleInfo?: LifestyleInfo;
+  verifiedBy?: string;
+  verificationNotes?: string;
+}
+
 // Analytics Types
 export interface AnalyticsMetric {
   label: string;
@@ -187,4 +220,20 @@ export interface InsuranceBreakdown {
   carrier: string;
   count: number;
   percentage: number;
+}
+
+// Scheduling Types
+export interface TimeSlot {
+  id: string;
+  datetime: string;
+  available: boolean;
+}
+
+export interface SchedulePatientData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  preEvaluationId: string;
+  centerId: string;
 }

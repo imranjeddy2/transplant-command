@@ -6,6 +6,9 @@ import type {
   ExtractionData,
   TrendDataPoint,
   InsuranceBreakdown,
+  PreEvaluationData,
+  TimeSlot,
+  SchedulePatientData,
 } from '@/types';
 
 // Helper to generate dates
@@ -661,6 +664,198 @@ export const documents: Document[] = [
   },
 ];
 
+// Pre-Evaluation data for advanced patients (evaluation_scheduled, evaluation_complete, waitlisted, transplanted)
+export const patientPreEvaluations: Record<string, PreEvaluationData> = {
+  // p-002: Jane Doe - evaluation_scheduled (pre-eval completed)
+  'p-002': {
+    id: 'pe-002',
+    patientId: 'p-002',
+    status: 'info_verified',
+    notifiedAt: hoursAgo(150),
+    scheduledAt: hoursAgo(145),
+    scheduledCallTime: hoursAgo(140),
+    completedAt: hoursAgo(140),
+    verifiedAt: hoursAgo(135),
+    actualCallDuration: 22,
+    medicalHistory: {
+      previousSurgeries: { value: 'Appendectomy (2010), Cyst removal (2018)', confidence: 'high' },
+      currentMedications: { value: 'Lisinopril 10mg daily, Amlodipine 5mg daily, Epoetin alfa weekly', confidence: 'high' },
+      allergies: { value: 'Penicillin - rash', confidence: 'high' },
+      symptoms: { value: 'Fatigue, occasional nausea, mild swelling in ankles', confidence: 'medium' },
+    },
+    lifestyleInfo: {
+      supportSystem: { value: 'Lives with spouse, adult children nearby', confidence: 'high' },
+      transportation: { value: 'Has personal vehicle, spouse can drive', confidence: 'high' },
+      livingSituation: { value: 'Single-story home, no accessibility issues', confidence: 'high' },
+      complianceHistory: { value: 'Excellent medication adherence, attends all dialysis appointments', confidence: 'high' },
+    },
+    verifiedBy: 'Coordinator Sarah Miller',
+    verificationNotes: 'All information verified. Patient is well-prepared for evaluation.',
+  },
+
+  // p-004: Maria Garcia - evaluation_complete (pre-eval completed)
+  'p-004': {
+    id: 'pe-004',
+    patientId: 'p-004',
+    status: 'info_verified',
+    notifiedAt: hoursAgo(450),
+    scheduledAt: hoursAgo(440),
+    scheduledCallTime: hoursAgo(420),
+    completedAt: hoursAgo(420),
+    verifiedAt: hoursAgo(410),
+    actualCallDuration: 28,
+    medicalHistory: {
+      previousSurgeries: { value: 'None', confidence: 'high' },
+      currentMedications: { value: 'Prednisone 5mg daily, Hydroxychloroquine 200mg twice daily, Tacrolimus 2mg twice daily', confidence: 'high' },
+      allergies: { value: 'No known allergies', confidence: 'high' },
+      symptoms: { value: 'Joint pain (managed), fatigue, occasional headaches', confidence: 'high' },
+    },
+    lifestyleInfo: {
+      supportSystem: { value: 'Lives with parents, strong family support network', confidence: 'high' },
+      transportation: { value: 'Family members available for transportation', confidence: 'high' },
+      livingSituation: { value: 'Two-story home, bedroom on first floor available', confidence: 'high' },
+      complianceHistory: { value: 'Excellent compliance with lupus treatment regimen', confidence: 'high' },
+    },
+    verifiedBy: 'Coordinator James Wilson',
+    verificationNotes: 'Patient very engaged and informed about transplant process.',
+  },
+
+  // p-005: William Brown - waitlisted (pre-eval completed)
+  'p-005': {
+    id: 'pe-005',
+    patientId: 'p-005',
+    status: 'info_verified',
+    notifiedAt: hoursAgo(950),
+    scheduledAt: hoursAgo(940),
+    scheduledCallTime: hoursAgo(920),
+    completedAt: hoursAgo(920),
+    verifiedAt: hoursAgo(910),
+    actualCallDuration: 25,
+    medicalHistory: {
+      previousSurgeries: { value: 'Knee replacement (2019)', confidence: 'high' },
+      currentMedications: { value: 'Carvedilol 25mg twice daily, Furosemide 40mg daily, Calcium acetate with meals', confidence: 'high' },
+      allergies: { value: 'Sulfa drugs - hives', confidence: 'high' },
+      symptoms: { value: 'Shortness of breath with exertion, leg cramps during dialysis', confidence: 'medium' },
+    },
+    lifestyleInfo: {
+      supportSystem: { value: 'Lives with wife, daughter visits weekly', confidence: 'high' },
+      transportation: { value: 'Wife drives, also uses medical transport for dialysis', confidence: 'high' },
+      livingSituation: { value: 'Ranch-style home, fully accessible', confidence: 'high' },
+      complianceHistory: { value: 'Good compliance, occasionally misses evening medications', confidence: 'medium' },
+    },
+    verifiedBy: 'Coordinator Sarah Miller',
+    verificationNotes: 'Discussed importance of medication timing. Patient committed to improvement.',
+  },
+
+  // p-008: Linda Martinez - evaluation_scheduled (pre-eval scheduled, not yet completed)
+  'p-008': {
+    id: 'pe-008',
+    patientId: 'p-008',
+    status: 'scheduled',
+    notifiedAt: hoursAgo(100),
+    scheduledAt: hoursAgo(95),
+    scheduledCallTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
+  },
+
+  // p-009: David Anderson - transplanted (pre-eval completed)
+  'p-009': {
+    id: 'pe-009',
+    patientId: 'p-009',
+    status: 'info_verified',
+    notifiedAt: hoursAgo(2100),
+    scheduledAt: hoursAgo(2090),
+    scheduledCallTime: hoursAgo(2050),
+    completedAt: hoursAgo(2050),
+    verifiedAt: hoursAgo(2040),
+    actualCallDuration: 20,
+    medicalHistory: {
+      previousSurgeries: { value: 'Hernia repair (2005)', confidence: 'high' },
+      currentMedications: { value: 'Lisinopril 5mg daily (at time of call)', confidence: 'high' },
+      allergies: { value: 'No known allergies', confidence: 'high' },
+      symptoms: { value: 'Mild fatigue, no other significant symptoms', confidence: 'high' },
+    },
+    lifestyleInfo: {
+      supportSystem: { value: 'Lives with wife and teenage son', confidence: 'high' },
+      transportation: { value: 'Has own vehicle, flexible work schedule', confidence: 'high' },
+      livingSituation: { value: 'Two-story home, no accessibility concerns', confidence: 'high' },
+      complianceHistory: { value: 'Excellent compliance history', confidence: 'high' },
+    },
+    verifiedBy: 'Coordinator James Wilson',
+    verificationNotes: 'Ideal candidate. Strong support system and excellent health literacy.',
+  },
+
+  // p-013: Richard White - evaluation_complete (pre-eval completed)
+  'p-013': {
+    id: 'pe-013',
+    patientId: 'p-013',
+    status: 'info_verified',
+    notifiedAt: hoursAgo(550),
+    scheduledAt: hoursAgo(540),
+    scheduledCallTime: hoursAgo(520),
+    completedAt: hoursAgo(520),
+    verifiedAt: hoursAgo(510),
+    actualCallDuration: 30,
+    medicalHistory: {
+      previousSurgeries: { value: 'Coronary stent placement (2020), Cataract surgery (2022)', confidence: 'high' },
+      currentMedications: { value: 'Metformin 1000mg twice daily, Insulin glargine 20 units nightly, Atorvastatin 40mg daily, Aspirin 81mg daily', confidence: 'high' },
+      allergies: { value: 'Contrast dye - requires premedication', confidence: 'high' },
+      symptoms: { value: 'Neuropathy in feet, vision changes (managed), fatigue', confidence: 'high' },
+    },
+    lifestyleInfo: {
+      supportSystem: { value: 'Lives alone, sister nearby, church community support', confidence: 'high' },
+      transportation: { value: 'No longer drives, relies on sister and church members', confidence: 'medium' },
+      livingSituation: { value: 'Ground floor apartment, accessible', confidence: 'high' },
+      complianceHistory: { value: 'Good compliance, uses pill organizer and phone reminders', confidence: 'high' },
+    },
+    verifiedBy: 'Coordinator Sarah Miller',
+    verificationNotes: 'Transportation plan confirmed with sister. Social worker notified for additional support assessment.',
+  },
+
+  // p-014: Jennifer Harris - waitlisted (pre-eval completed)
+  'p-014': {
+    id: 'pe-014',
+    patientId: 'p-014',
+    status: 'info_verified',
+    notifiedAt: hoursAgo(750),
+    scheduledAt: hoursAgo(740),
+    scheduledCallTime: hoursAgo(720),
+    completedAt: hoursAgo(720),
+    verifiedAt: hoursAgo(710),
+    actualCallDuration: 24,
+    medicalHistory: {
+      previousSurgeries: { value: 'C-section (2008), Laparoscopic cyst removal (2015)', confidence: 'high' },
+      currentMedications: { value: 'Sevelamer 800mg three times daily with meals, Calcitriol 0.25mcg daily, Iron supplements', confidence: 'high' },
+      allergies: { value: 'Shellfish - anaphylaxis', confidence: 'high' },
+      symptoms: { value: 'Abdominal discomfort from enlarged kidneys, back pain', confidence: 'high' },
+    },
+    lifestyleInfo: {
+      supportSystem: { value: 'Lives with husband and two children (ages 16, 14)', confidence: 'high' },
+      transportation: { value: 'Has vehicle, husband has flexible job', confidence: 'high' },
+      livingSituation: { value: 'Two-story home, considering first-floor bedroom conversion', confidence: 'high' },
+      complianceHistory: { value: 'Excellent compliance, very proactive about health management', confidence: 'high' },
+    },
+    verifiedBy: 'Coordinator James Wilson',
+    verificationNotes: 'Very motivated patient. Family fully supportive of transplant journey.',
+  },
+};
+
+// Helper to get pre-evaluation by patient ID
+export function getPreEvaluationByPatientId(patientId: string): PreEvaluationData | null {
+  return patientPreEvaluations[patientId] || null;
+}
+
+// Get all pre-evaluations as a list for dashboard
+export function getAllPreEvaluations(): Array<PreEvaluationData & { patientName: string; mrn: string }> {
+  return Object.values(patientPreEvaluations).map((preEval) => {
+    const patient = getPatientById(preEval.patientId);
+    return {
+      ...preEval,
+      patientName: patient ? `${patient.firstName} ${patient.lastName}` : 'Unknown',
+      mrn: patient?.mrn || '',
+    };
+  });
+}
+
 // Journey data for all patients - mapped by patient ID
 export const patientJourneys: Record<string, JourneyStep[]> = {
   // p-001: John Smith - under_review (Human Verification in progress)
@@ -691,9 +886,10 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     },
     { id: 'j-003', title: 'Human Verification', status: 'in_progress', subSteps: [{ id: 'js-003-1', title: 'Awaiting coordinator review' }] },
     { id: 'j-004', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-005', title: 'Clinical Evaluation', status: 'pending' },
-    { id: 'j-006', title: 'Committee Review', status: 'pending' },
-    { id: 'j-007', title: 'Synced to EMR', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-006', title: 'Clinical Evaluation', status: 'pending' },
+    { id: 'j-007', title: 'Committee Review', status: 'pending' },
+    { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
   ],
 
   // p-002: Jane Doe - evaluation_scheduled (Clinical Evaluation in progress)
@@ -702,9 +898,14 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(167), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'completed', timestamp: hoursAgo(160) },
     { id: 'j-004', title: 'Insurance Verification', status: 'completed', timestamp: hoursAgo(120), subSteps: [{ id: 'js-004-1', title: 'Aetna authorization approved' }] },
-    { id: 'j-005', title: 'Clinical Evaluation', status: 'in_progress', subSteps: [{ id: 'js-005-1', title: 'Evaluation scheduled for next week' }] },
-    { id: 'j-006', title: 'Committee Review', status: 'pending' },
-    { id: 'j-007', title: 'Synced to EMR', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation', status: 'completed', timestamp: hoursAgo(135), aiCompleted: true, subSteps: [
+      { id: 'js-005-1', title: 'Call scheduled', timestamp: hoursAgo(145), aiCompleted: true },
+      { id: 'js-005-2', title: 'Call completed', timestamp: hoursAgo(140), aiCompleted: true },
+      { id: 'js-005-3', title: 'Info verified', timestamp: hoursAgo(135) },
+    ] },
+    { id: 'j-006', title: 'Clinical Evaluation', status: 'in_progress', subSteps: [{ id: 'js-006-1', title: 'Evaluation scheduled for next week' }] },
+    { id: 'j-007', title: 'Committee Review', status: 'pending' },
+    { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
   ],
 
   // p-003: Robert Johnson - referral_received (AI Extraction in progress)
@@ -713,9 +914,10 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'in_progress', subSteps: [{ id: 'js-002-1', title: 'Processing referral documents...', aiCompleted: true }] },
     { id: 'j-003', title: 'Human Verification', status: 'pending' },
     { id: 'j-004', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-005', title: 'Clinical Evaluation', status: 'pending' },
-    { id: 'j-006', title: 'Committee Review', status: 'pending' },
-    { id: 'j-007', title: 'Synced to EMR', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-006', title: 'Clinical Evaluation', status: 'pending' },
+    { id: 'j-007', title: 'Committee Review', status: 'pending' },
+    { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
   ],
 
   // p-004: Maria Garcia - evaluation_complete (Committee Review in progress)
@@ -724,9 +926,14 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(503), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'completed', timestamp: hoursAgo(480) },
     { id: 'j-004', title: 'Insurance Verification', status: 'completed', timestamp: hoursAgo(400), subSteps: [{ id: 'js-004-1', title: 'Cigna authorization approved' }] },
-    { id: 'j-005', title: 'Clinical Evaluation', status: 'completed', timestamp: hoursAgo(72), subSteps: [{ id: 'js-005-1', title: 'All tests completed' }, { id: 'js-005-2', title: 'Patient cleared for transplant' }] },
-    { id: 'j-006', title: 'Committee Review', status: 'in_progress', subSteps: [{ id: 'js-006-1', title: 'Scheduled for Thursday committee meeting' }] },
-    { id: 'j-007', title: 'Synced to EMR', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation', status: 'completed', timestamp: hoursAgo(410), aiCompleted: true, subSteps: [
+      { id: 'js-005-1', title: 'Call scheduled', timestamp: hoursAgo(440), aiCompleted: true },
+      { id: 'js-005-2', title: 'Call completed', timestamp: hoursAgo(420), aiCompleted: true },
+      { id: 'js-005-3', title: 'Info verified', timestamp: hoursAgo(410) },
+    ] },
+    { id: 'j-006', title: 'Clinical Evaluation', status: 'completed', timestamp: hoursAgo(72), subSteps: [{ id: 'js-006-1', title: 'All tests completed' }, { id: 'js-006-2', title: 'Patient cleared for transplant' }] },
+    { id: 'j-007', title: 'Committee Review', status: 'in_progress', subSteps: [{ id: 'js-007-1', title: 'Scheduled for Thursday committee meeting' }] },
+    { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
   ],
 
   // p-005: William Brown - waitlisted (Synced to EMR, on waitlist)
@@ -735,9 +942,14 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(1079), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'completed', timestamp: hoursAgo(1060) },
     { id: 'j-004', title: 'Insurance Verification', status: 'completed', timestamp: hoursAgo(900), subSteps: [{ id: 'js-004-1', title: 'Medicare authorization approved' }] },
-    { id: 'j-005', title: 'Clinical Evaluation', status: 'completed', timestamp: hoursAgo(600) },
-    { id: 'j-006', title: 'Committee Review', status: 'completed', timestamp: hoursAgo(400), subSteps: [{ id: 'js-006-1', title: 'Approved for transplant waitlist' }] },
-    { id: 'j-007', title: 'Synced to EMR', status: 'completed', timestamp: hoursAgo(380), subSteps: [{ id: 'js-007-1', title: 'Added to UNOS waitlist' }] },
+    { id: 'j-005', title: 'Pre-Evaluation', status: 'completed', timestamp: hoursAgo(910), aiCompleted: true, subSteps: [
+      { id: 'js-005-1', title: 'Call scheduled', timestamp: hoursAgo(940), aiCompleted: true },
+      { id: 'js-005-2', title: 'Call completed', timestamp: hoursAgo(920), aiCompleted: true },
+      { id: 'js-005-3', title: 'Info verified', timestamp: hoursAgo(910) },
+    ] },
+    { id: 'j-006', title: 'Clinical Evaluation', status: 'completed', timestamp: hoursAgo(600) },
+    { id: 'j-007', title: 'Committee Review', status: 'completed', timestamp: hoursAgo(400), subSteps: [{ id: 'js-007-1', title: 'Approved for transplant waitlist' }] },
+    { id: 'j-008', title: 'Synced to EMR', status: 'completed', timestamp: hoursAgo(380), subSteps: [{ id: 'js-008-1', title: 'Added to UNOS waitlist' }] },
   ],
 
   // p-006: Patricia Davis - under_review (Human Verification in progress)
@@ -746,9 +958,10 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(71), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'in_progress', subSteps: [{ id: 'js-003-1', title: 'Additional documents received - re-review needed' }] },
     { id: 'j-004', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-005', title: 'Clinical Evaluation', status: 'pending' },
-    { id: 'j-006', title: 'Committee Review', status: 'pending' },
-    { id: 'j-007', title: 'Synced to EMR', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-006', title: 'Clinical Evaluation', status: 'pending' },
+    { id: 'j-007', title: 'Committee Review', status: 'pending' },
+    { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
   ],
 
   // p-007: James Wilson - referral_received (Just received today)
@@ -757,20 +970,25 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'in_progress', subSteps: [{ id: 'js-002-1', title: 'Urgent referral - prioritized processing', aiCompleted: true }] },
     { id: 'j-003', title: 'Human Verification', status: 'pending' },
     { id: 'j-004', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-005', title: 'Clinical Evaluation', status: 'pending' },
-    { id: 'j-006', title: 'Committee Review', status: 'pending' },
-    { id: 'j-007', title: 'Synced to EMR', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-006', title: 'Clinical Evaluation', status: 'pending' },
+    { id: 'j-007', title: 'Committee Review', status: 'pending' },
+    { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
   ],
 
-  // p-008: Linda Martinez - evaluation_scheduled (Clinical Evaluation in progress)
+  // p-008: Linda Martinez - evaluation_scheduled (Pre-Evaluation scheduled, not yet completed)
   'p-008': [
     { id: 'j-001', title: 'Referral Packet Received', status: 'completed', timestamp: hoursAgo(240), aiCompleted: true },
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(239), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'completed', timestamp: hoursAgo(220) },
     { id: 'j-004', title: 'Insurance Verification', status: 'completed', timestamp: hoursAgo(96), subSteps: [{ id: 'js-004-1', title: 'UnitedHealthcare authorization approved' }] },
-    { id: 'j-005', title: 'Clinical Evaluation', status: 'in_progress', subSteps: [{ id: 'js-005-1', title: 'Re-transplant evaluation in progress' }, { id: 'js-005-2', title: 'Previous transplant history reviewed' }] },
-    { id: 'j-006', title: 'Committee Review', status: 'pending' },
-    { id: 'j-007', title: 'Synced to EMR', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation', status: 'in_progress', subSteps: [
+      { id: 'js-005-1', title: 'Call scheduled', timestamp: hoursAgo(95), aiCompleted: true },
+      { id: 'js-005-2', title: 'Call pending - scheduled in 2 days' },
+    ] },
+    { id: 'j-006', title: 'Clinical Evaluation', status: 'pending' },
+    { id: 'j-007', title: 'Committee Review', status: 'pending' },
+    { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
   ],
 
   // p-009: David Anderson - transplanted (All complete!)
@@ -779,10 +997,15 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(2159), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'completed', timestamp: hoursAgo(2140) },
     { id: 'j-004', title: 'Insurance Verification', status: 'completed', timestamp: hoursAgo(2000) },
-    { id: 'j-005', title: 'Clinical Evaluation', status: 'completed', timestamp: hoursAgo(1500) },
-    { id: 'j-006', title: 'Committee Review', status: 'completed', timestamp: hoursAgo(1200), subSteps: [{ id: 'js-006-1', title: 'Approved for transplant waitlist' }] },
-    { id: 'j-007', title: 'Synced to EMR', status: 'completed', timestamp: hoursAgo(1180) },
-    { id: 'j-008', title: 'Transplant Complete', status: 'completed', timestamp: hoursAgo(720), subSteps: [{ id: 'js-008-1', title: 'Successful kidney transplant' }, { id: 'js-008-2', title: 'Post-operative recovery on track' }] },
+    { id: 'j-005', title: 'Pre-Evaluation', status: 'completed', timestamp: hoursAgo(2040), aiCompleted: true, subSteps: [
+      { id: 'js-005-1', title: 'Call scheduled', timestamp: hoursAgo(2090), aiCompleted: true },
+      { id: 'js-005-2', title: 'Call completed', timestamp: hoursAgo(2050), aiCompleted: true },
+      { id: 'js-005-3', title: 'Info verified', timestamp: hoursAgo(2040) },
+    ] },
+    { id: 'j-006', title: 'Clinical Evaluation', status: 'completed', timestamp: hoursAgo(1500) },
+    { id: 'j-007', title: 'Committee Review', status: 'completed', timestamp: hoursAgo(1200), subSteps: [{ id: 'js-007-1', title: 'Approved for transplant waitlist' }] },
+    { id: 'j-008', title: 'Synced to EMR', status: 'completed', timestamp: hoursAgo(1180) },
+    { id: 'j-009', title: 'Transplant Complete', status: 'completed', timestamp: hoursAgo(720), subSteps: [{ id: 'js-009-1', title: 'Successful kidney transplant' }, { id: 'js-009-2', title: 'Post-operative recovery on track' }] },
   ],
 
   // p-010: Susan Taylor - under_review (Human Verification in progress)
@@ -791,12 +1014,13 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(95), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'in_progress', subSteps: [{ id: 'js-003-1', title: 'Review updated referral information' }] },
     { id: 'j-004', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-005', title: 'Clinical Evaluation', status: 'pending' },
-    { id: 'j-006', title: 'Committee Review', status: 'pending' },
-    { id: 'j-007', title: 'Synced to EMR', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-006', title: 'Clinical Evaluation', status: 'pending' },
+    { id: 'j-007', title: 'Committee Review', status: 'pending' },
+    { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
   ],
 
-  // p-011: Michael Thomas - inactive (Cancelled at verification stage)
+  // p-011: Michael Thomas - inactive (Cancelled at verification stage, before pre-eval)
   'p-011': [
     { id: 'j-001', title: 'Referral Packet Received', status: 'completed', timestamp: hoursAgo(1440), aiCompleted: true },
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(1439), aiCompleted: true },
@@ -811,9 +1035,10 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'in_progress', subSteps: [{ id: 'js-002-1', title: 'Processing referral packet', aiCompleted: true }] },
     { id: 'j-003', title: 'Human Verification', status: 'pending' },
     { id: 'j-004', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-005', title: 'Clinical Evaluation', status: 'pending' },
-    { id: 'j-006', title: 'Committee Review', status: 'pending' },
-    { id: 'j-007', title: 'Synced to EMR', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-006', title: 'Clinical Evaluation', status: 'pending' },
+    { id: 'j-007', title: 'Committee Review', status: 'pending' },
+    { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
   ],
 
   // p-013: Richard White - evaluation_complete (Committee Review in progress)
@@ -822,9 +1047,14 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(671), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'completed', timestamp: hoursAgo(650) },
     { id: 'j-004', title: 'Insurance Verification', status: 'completed', timestamp: hoursAgo(500), subSteps: [{ id: 'js-004-1', title: 'UnitedHealthcare authorization approved' }] },
-    { id: 'j-005', title: 'Clinical Evaluation', status: 'completed', timestamp: hoursAgo(144), subSteps: [{ id: 'js-005-1', title: 'Clinical review completed' }] },
-    { id: 'j-006', title: 'Committee Review', status: 'in_progress', subSteps: [{ id: 'js-006-1', title: 'Pending committee meeting' }] },
-    { id: 'j-007', title: 'Synced to EMR', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation', status: 'completed', timestamp: hoursAgo(510), aiCompleted: true, subSteps: [
+      { id: 'js-005-1', title: 'Call scheduled', timestamp: hoursAgo(540), aiCompleted: true },
+      { id: 'js-005-2', title: 'Call completed', timestamp: hoursAgo(520), aiCompleted: true },
+      { id: 'js-005-3', title: 'Info verified', timestamp: hoursAgo(510) },
+    ] },
+    { id: 'j-006', title: 'Clinical Evaluation', status: 'completed', timestamp: hoursAgo(144), subSteps: [{ id: 'js-006-1', title: 'Clinical review completed' }] },
+    { id: 'j-007', title: 'Committee Review', status: 'in_progress', subSteps: [{ id: 'js-007-1', title: 'Pending committee meeting' }] },
+    { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
   ],
 
   // p-014: Jennifer Harris - waitlisted (Synced to EMR, on waitlist)
@@ -833,9 +1063,14 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(839), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'completed', timestamp: hoursAgo(820) },
     { id: 'j-004', title: 'Insurance Verification', status: 'completed', timestamp: hoursAgo(700), subSteps: [{ id: 'js-004-1', title: 'Cigna authorization approved' }] },
-    { id: 'j-005', title: 'Clinical Evaluation', status: 'completed', timestamp: hoursAgo(400) },
-    { id: 'j-006', title: 'Committee Review', status: 'completed', timestamp: hoursAgo(200), subSteps: [{ id: 'js-006-1', title: 'Approved for transplant waitlist' }] },
-    { id: 'j-007', title: 'Synced to EMR', status: 'completed', timestamp: hoursAgo(168), subSteps: [{ id: 'js-007-1', title: 'Added to UNOS waitlist' }] },
+    { id: 'j-005', title: 'Pre-Evaluation', status: 'completed', timestamp: hoursAgo(710), aiCompleted: true, subSteps: [
+      { id: 'js-005-1', title: 'Call scheduled', timestamp: hoursAgo(740), aiCompleted: true },
+      { id: 'js-005-2', title: 'Call completed', timestamp: hoursAgo(720), aiCompleted: true },
+      { id: 'js-005-3', title: 'Info verified', timestamp: hoursAgo(710) },
+    ] },
+    { id: 'j-006', title: 'Clinical Evaluation', status: 'completed', timestamp: hoursAgo(400) },
+    { id: 'j-007', title: 'Committee Review', status: 'completed', timestamp: hoursAgo(200), subSteps: [{ id: 'js-007-1', title: 'Approved for transplant waitlist' }] },
+    { id: 'j-008', title: 'Synced to EMR', status: 'completed', timestamp: hoursAgo(168), subSteps: [{ id: 'js-008-1', title: 'Added to UNOS waitlist' }] },
   ],
 
   // p-015: Charles Clark - under_review (Human Verification in progress)
@@ -844,9 +1079,10 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(119), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'in_progress', subSteps: [{ id: 'js-003-1', title: 'Requesting missing lab results' }] },
     { id: 'j-004', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-005', title: 'Clinical Evaluation', status: 'pending' },
-    { id: 'j-006', title: 'Committee Review', status: 'pending' },
-    { id: 'j-007', title: 'Synced to EMR', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-006', title: 'Clinical Evaluation', status: 'pending' },
+    { id: 'j-007', title: 'Committee Review', status: 'pending' },
+    { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
   ],
 };
 
@@ -860,9 +1096,10 @@ export function getJourneyByPatientId(patientId: string): JourneyStep[] {
     { id: 'j-2', title: 'AI Data Extraction', status: 'pending' },
     { id: 'j-3', title: 'Human Verification', status: 'pending' },
     { id: 'j-4', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-5', title: 'Clinical Evaluation', status: 'pending' },
-    { id: 'j-6', title: 'Committee Review', status: 'pending' },
-    { id: 'j-7', title: 'Synced to EMR', status: 'pending' },
+    { id: 'j-5', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-6', title: 'Clinical Evaluation', status: 'pending' },
+    { id: 'j-7', title: 'Committee Review', status: 'pending' },
+    { id: 'j-8', title: 'Synced to EMR', status: 'pending' },
   ];
 }
 
@@ -928,6 +1165,95 @@ export const analyticsMetrics = {
   completedThisWeek: 12,
 };
 
+// Helper function to generate extraction data from patient
+export function getExtractionDataByPatientId(patientId: string): ExtractionData {
+  const patient = patients.find((p) => p.id === patientId);
+
+  if (!patient) {
+    // Return empty extraction if patient not found
+    return {
+      firstName: { value: '', confidence: 'low' },
+      lastName: { value: '', confidence: 'low' },
+      dateOfBirth: { value: '', confidence: 'low' },
+      ssn: { value: '', confidence: 'low' },
+      phone: { value: '', confidence: 'low' },
+      address: { value: '', confidence: 'low' },
+      gfr: { value: '', confidence: 'low' },
+      creatinine: { value: '', confidence: 'low' },
+      bloodType: { value: '', confidence: 'low' },
+      bmi: { value: '', confidence: 'low' },
+      primaryDiagnosis: { value: '', confidence: 'low' },
+      diabetes: { value: '', confidence: 'low' },
+      hypertension: { value: '', confidence: 'low' },
+      previousTransplants: { value: '', confidence: 'low' },
+      onDialysis: { value: '', confidence: 'low' },
+      dialysisStartDate: { value: '', confidence: 'low' },
+      dialysisType: { value: '', confidence: 'low' },
+      referringProviderName: { value: '', confidence: 'low' },
+      referringOrganization: { value: '', confidence: 'low' },
+      referringNpi: { value: '', confidence: 'low' },
+      referringPhone: { value: '', confidence: 'low' },
+      referringFax: { value: '', confidence: 'low' },
+      receivingProviderName: { value: '', confidence: 'low' },
+      receivingOrganization: { value: '', confidence: 'low' },
+      receivingNpi: { value: '', confidence: 'low' },
+      insuranceCarrier: { value: '', confidence: 'low' },
+      policyNumber: { value: '', confidence: 'low' },
+      groupNumber: { value: '', confidence: 'low' },
+    };
+  }
+
+  // Format date of birth
+  const dob = new Date(patient.dateOfBirth);
+  const formattedDob = `${String(dob.getMonth() + 1).padStart(2, '0')}/${String(dob.getDate()).padStart(2, '0')}/${dob.getFullYear()}`;
+
+  // Format address
+  const address = patient.address
+    ? `${patient.address.street}, ${patient.address.city}, ${patient.address.state} ${patient.address.zip}`
+    : '';
+
+  // Format dialysis start date if exists
+  let dialysisStartFormatted = '';
+  if (patient.dialysisStartDate) {
+    const dialysisDate = new Date(patient.dialysisStartDate);
+    dialysisStartFormatted = `${String(dialysisDate.getMonth() + 1).padStart(2, '0')}/${String(dialysisDate.getDate()).padStart(2, '0')}/${dialysisDate.getFullYear()}`;
+  }
+
+  // Generate SSN placeholder based on patient ID
+  const ssnLastFour = patient.id.replace('p-', '').padStart(4, '0').slice(-4);
+
+  return {
+    firstName: { value: patient.firstName, confidence: 'high' },
+    lastName: { value: patient.lastName, confidence: 'high' },
+    dateOfBirth: { value: formattedDob, confidence: 'high' },
+    ssn: { value: `***-**-${ssnLastFour}`, confidence: 'high' },
+    phone: { value: patient.phone || '', confidence: patient.phone ? 'high' : 'low' },
+    address: { value: address, confidence: address ? 'high' : 'low' },
+    gfr: { value: String(patient.gfr ?? ''), confidence: patient.gfr ? 'high' : 'low' },
+    creatinine: { value: String(patient.creatinine ?? ''), confidence: patient.creatinine ? 'high' : 'low' },
+    bloodType: { value: patient.bloodType || '', confidence: patient.bloodType ? 'high' : 'low' },
+    bmi: { value: String(patient.bmi ?? ''), confidence: patient.bmi ? 'medium' : 'low' },
+    primaryDiagnosis: { value: patient.primaryDiagnosis || '', confidence: patient.primaryDiagnosis ? 'high' : 'low' },
+    diabetes: { value: patient.diabetes ? 'Yes' : 'No', confidence: 'high' },
+    hypertension: { value: patient.hypertension ? 'Yes' : 'No', confidence: 'high' },
+    previousTransplants: { value: String(patient.previousTransplants), confidence: 'high' },
+    onDialysis: { value: patient.onDialysis ? 'Yes' : 'No', confidence: 'high' },
+    dialysisStartDate: { value: dialysisStartFormatted, confidence: dialysisStartFormatted ? 'medium' : 'low' },
+    dialysisType: { value: String(patient.dialysisType || ''), confidence: patient.dialysisType ? 'high' : 'low' },
+    referringProviderName: { value: String(patient.referringProvider?.name || ''), confidence: patient.referringProvider?.name ? 'high' : 'low' },
+    referringOrganization: { value: String(patient.referringProvider?.organization || ''), confidence: patient.referringProvider?.organization ? 'high' : 'medium' },
+    referringNpi: { value: String(patient.referringProvider?.npi || ''), confidence: patient.referringProvider?.npi ? 'high' : 'low' },
+    referringPhone: { value: patient.referringProvider?.phone || '', confidence: patient.referringProvider?.phone ? 'medium' : 'low' },
+    referringFax: { value: patient.referringProvider?.fax || '', confidence: patient.referringProvider?.fax ? 'low' : 'low' },
+    receivingProviderName: { value: patient.receivingProvider?.name || '', confidence: patient.receivingProvider?.name ? 'high' : 'low' },
+    receivingOrganization: { value: patient.receivingProvider?.organization || '', confidence: patient.receivingProvider?.organization ? 'high' : 'low' },
+    receivingNpi: { value: patient.receivingProvider?.npi || '', confidence: patient.receivingProvider?.npi ? 'high' : 'low' },
+    insuranceCarrier: { value: patient.insurance?.carrier || '', confidence: patient.insurance?.carrier ? 'high' : 'low' },
+    policyNumber: { value: patient.insurance?.policyNumber || '', confidence: patient.insurance?.policyNumber ? 'high' : 'low' },
+    groupNumber: { value: patient.insurance?.groupNumber || '', confidence: patient.insurance?.groupNumber ? 'medium' : 'low' },
+  };
+}
+
 // Helper functions
 export function getPatientById(id: string): Patient | undefined {
   return patients.find((p) => p.id === id);
@@ -943,4 +1269,89 @@ export function getDocumentsByPatientId(patientId: string): Document[] {
 
 export function getTasksByStatus(status: Task['status']): Task[] {
   return tasks.filter((t) => t.status === status);
+}
+
+// Scheduling helper functions
+
+// Generate available time slots for the next 14 days (30-minute intervals, weekdays only)
+export function getAvailableTimeSlots(startDate: Date = new Date()): TimeSlot[] {
+  const slots: TimeSlot[] = [];
+  const start = new Date(startDate);
+  start.setHours(0, 0, 0, 0);
+
+  for (let day = 0; day < 14; day++) {
+    const date = new Date(start);
+    date.setDate(date.getDate() + day);
+
+    // Skip weekends (0 = Sunday, 6 = Saturday)
+    if (date.getDay() === 0 || date.getDay() === 6) continue;
+
+    // Add 30-minute slots from 9:00 AM to 4:30 PM
+    for (let hour = 9; hour <= 16; hour++) {
+      for (const minute of [0, 30]) {
+        // Skip 5:00 PM slot (only go up to 4:30)
+        if (hour === 16 && minute === 30) continue;
+
+        const slotDate = new Date(date);
+        slotDate.setHours(hour, minute, 0, 0);
+
+        // Skip slots in the past
+        if (slotDate <= new Date()) continue;
+
+        slots.push({
+          id: `slot-${day}-${hour}-${minute}`,
+          datetime: slotDate.toISOString(),
+          available: Math.random() > 0.25, // 75% availability
+        });
+      }
+    }
+  }
+
+  return slots;
+}
+
+// Validate scheduling token and return patient data
+export function validateSchedulingToken(token: string): SchedulePatientData | null {
+  // In mock, the token is simply the patient ID
+  const patient = patients.find((p) => p.id === token);
+
+  if (!patient) return null;
+
+  const preEval = patientPreEvaluations[patient.id];
+
+  return {
+    id: patient.id,
+    firstName: patient.firstName,
+    lastName: patient.lastName,
+    phone: patient.phone || '',
+    preEvaluationId: preEval?.id || `pe-${patient.id}`,
+    centerId: 'nyu-langone',
+  };
+}
+
+// Schedule a pre-evaluation call
+export function schedulePreEvaluationCall(
+  patientId: string,
+  slotTime: string
+): PreEvaluationData {
+  // Check if pre-evaluation exists
+  let preEval = patientPreEvaluations[patientId];
+
+  if (!preEval) {
+    // Create a new pre-evaluation record
+    preEval = {
+      id: `pe-${patientId}`,
+      patientId,
+      status: 'notified',
+      notifiedAt: new Date().toISOString(),
+    };
+    patientPreEvaluations[patientId] = preEval;
+  }
+
+  // Update to scheduled status
+  preEval.status = 'scheduled';
+  preEval.scheduledAt = new Date().toISOString();
+  preEval.scheduledCallTime = slotTime;
+
+  return preEval;
 }

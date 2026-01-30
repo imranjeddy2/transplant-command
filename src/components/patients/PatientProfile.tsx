@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
@@ -23,15 +23,18 @@ import {
   getTasksByPatientId,
   getDocumentsByPatientId,
   getJourneyByPatientId,
+  getPreEvaluationByPatientId,
   patients,
 } from '@/data/mockData';
 import type { JourneyStep, JourneyStepStatus } from '@/types';
+import { PreEvalResultsTab } from './PreEvalResultsTab';
 
-type TabKey = 'journey' | 'tasks' | 'insurance' | 'documents';
+type TabKey = 'journey' | 'tasks' | 'pre-eval' | 'insurance' | 'documents';
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'journey', label: 'Patient Journey' },
   { key: 'tasks', label: 'Tasks' },
+  { key: 'pre-eval', label: 'Pre-Eval Results' },
   { key: 'insurance', label: 'Insurance' },
   { key: 'documents', label: 'Documents' },
 ];
@@ -170,7 +173,11 @@ function EmptyDocuments() {
 export function PatientProfile() {
   const { patientId } = useParams<{ patientId: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabKey>('journey');
+  const location = useLocation();
+  const locationState = location.state as { defaultTab?: TabKey; from?: string } | null;
+  const defaultTab = locationState?.defaultTab || 'journey';
+  const backPath = locationState?.from || '/patients';
+  const [activeTab, setActiveTab] = useState<TabKey>(defaultTab);
 
   const patient = getPatientById(patientId || '');
   const patientTasks = getTasksByPatientId(patientId || '');
@@ -183,6 +190,7 @@ export function PatientProfile() {
 
   // Get patient-specific journey data
   const journey = getJourneyByPatientId(patientId || '');
+  const preEvaluation = getPreEvaluationByPatientId(patientId || '');
 
   if (!patient) {
     return (
@@ -207,7 +215,7 @@ export function PatientProfile() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate('/patients')}
+              onClick={() => navigate(backPath)}
               className="p-2 hover:bg-muted rounded-lg transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -467,6 +475,8 @@ export function PatientProfile() {
               )}
             </>
           )}
+
+          {activeTab === 'pre-eval' && <PreEvalResultsTab preEvaluation={preEvaluation} />}
         </div>
       </div>
     </div>

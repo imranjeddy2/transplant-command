@@ -1,9 +1,10 @@
 import { NavLink } from 'react-router-dom';
-import { ClipboardList, Users, BarChart3, Search } from 'lucide-react';
+import { ClipboardList, Users, BarChart3, Search, PhoneCall } from 'lucide-react';
 
 const navItems = [
   { to: '/', icon: ClipboardList, label: 'Tasks' },
   { to: '/patients', icon: Users, label: 'Patients' },
+  { to: '/pre-evaluations', icon: PhoneCall, label: 'Pre-Evaluations' },
   { to: '/analytics', icon: BarChart3, label: 'Analytics' },
 ];
 
