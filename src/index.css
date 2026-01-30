@@ -5,10 +5,10 @@
 
 :root {
   /* TransplantCommand Design Tokens */
-  --bg-canvas: #F9F8F6;
-  --bg-sidebar: #1F1F1F;
+  --bg-canvas: #fdfaf9;
+  --bg-sidebar: #f4f1f0;
   --bg-card: #FFFFFF;
-  --bg-input: #F5F5F0;
+  --bg-input: #F7F4F2;
 
   --accent-primary: #9333EA;
   --accent-primary-hover: #A855F7;
@@ -28,7 +28,7 @@
 
   /* shadcn variables - customized for TransplantCommand */
   --radius: 0.625rem;
-  --background: #F9F8F6;
+  --background: #fdfaf9;
   --foreground: #1F2937;
   --card: #FFFFFF;
   --card-foreground: #1F2937;
@@ -36,11 +36,11 @@
   --popover-foreground: #1F2937;
   --primary: #9333EA;
   --primary-foreground: #FFFFFF;
-  --secondary: #F5F5F0;
+  --secondary: #F7F4F2;
   --secondary-foreground: #1F2937;
-  --muted: #F5F5F0;
+  --muted: #F7F4F2;
   --muted-foreground: #6B7280;
-  --accent: #F5F5F0;
+  --accent: #F7F4F2;
   --accent-foreground: #1F2937;
   --destructive: #EF4444;
   --border: #E5E7EB;
@@ -51,13 +51,13 @@
   --chart-3: #F59E0B;
   --chart-4: #3B82F6;
   --chart-5: #EC4899;
-  --sidebar: #1F1F1F;
-  --sidebar-foreground: #FFFFFF;
+  --sidebar: #f4f1f0;
+  --sidebar-foreground: #1F2937;
   --sidebar-primary: #9333EA;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #2D2D2D;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #3D3D3D;
+  --sidebar-accent: #E8E4E2;
+  --sidebar-accent-foreground: #1F2937;
+  --sidebar-border: #E0DCDA;
   --sidebar-ring: #9333EA;
 }
 

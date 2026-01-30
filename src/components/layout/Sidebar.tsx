@@ -1,8 +1,9 @@
 import { NavLink } from 'react-router-dom';
-import { ClipboardList, Users, BarChart3, Search, PhoneCall } from 'lucide-react';
+import { Home, ClipboardList, Users, BarChart3, Search, PhoneCall } from 'lucide-react';
 
 const navItems = [
-  { to: '/', icon: ClipboardList, label: 'Tasks' },
+  { to: '/', icon: Home, label: 'Home' },
+  { to: '/tasks', icon: ClipboardList, label: 'Tasks' },
   { to: '/patients', icon: Users, label: 'Patients' },
   { to: '/pre-evaluations', icon: PhoneCall, label: 'Pre-Evaluations' },
   { to: '/analytics', icon: BarChart3, label: 'Analytics' },
@@ -14,7 +15,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-sidebar-border">
         <h1 className="text-xl font-semibold tracking-tight">
-          Transplant<span className="text-primary">Command</span>
+          Transplant<span className="text-primary">AI</span>
         </h1>
       </div>
 
