@@ -9,6 +9,8 @@ import type {
   PreEvaluationData,
   TimeSlot,
   SchedulePatientData,
+  MedicalHistoryInfo,
+  LifestyleInfo,
 } from '@/types';
 
 // Helper to generate dates
@@ -886,7 +888,7 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     },
     { id: 'j-003', title: 'Human Verification', status: 'in_progress', subSteps: [{ id: 'js-003-1', title: 'Awaiting coordinator review' }] },
     { id: 'j-004', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-005', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation (AI Voice)', status: 'pending' },
     { id: 'j-006', title: 'Clinical Evaluation', status: 'pending' },
     { id: 'j-007', title: 'Committee Review', status: 'pending' },
     { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
@@ -898,7 +900,7 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(167), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'completed', timestamp: hoursAgo(160) },
     { id: 'j-004', title: 'Insurance Verification', status: 'completed', timestamp: hoursAgo(120), subSteps: [{ id: 'js-004-1', title: 'Aetna authorization approved' }] },
-    { id: 'j-005', title: 'Pre-Evaluation', status: 'completed', timestamp: hoursAgo(135), aiCompleted: true, subSteps: [
+    { id: 'j-005', title: 'Pre-Evaluation (AI Voice)', status: 'completed', timestamp: hoursAgo(135), aiCompleted: true, subSteps: [
       { id: 'js-005-1', title: 'Call scheduled', timestamp: hoursAgo(145), aiCompleted: true },
       { id: 'js-005-2', title: 'Call completed', timestamp: hoursAgo(140), aiCompleted: true },
       { id: 'js-005-3', title: 'Info verified', timestamp: hoursAgo(135) },
@@ -914,7 +916,7 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'in_progress', subSteps: [{ id: 'js-002-1', title: 'Processing referral documents...', aiCompleted: true }] },
     { id: 'j-003', title: 'Human Verification', status: 'pending' },
     { id: 'j-004', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-005', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation (AI Voice)', status: 'pending' },
     { id: 'j-006', title: 'Clinical Evaluation', status: 'pending' },
     { id: 'j-007', title: 'Committee Review', status: 'pending' },
     { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
@@ -926,7 +928,7 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(503), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'completed', timestamp: hoursAgo(480) },
     { id: 'j-004', title: 'Insurance Verification', status: 'completed', timestamp: hoursAgo(400), subSteps: [{ id: 'js-004-1', title: 'Cigna authorization approved' }] },
-    { id: 'j-005', title: 'Pre-Evaluation', status: 'completed', timestamp: hoursAgo(410), aiCompleted: true, subSteps: [
+    { id: 'j-005', title: 'Pre-Evaluation (AI Voice)', status: 'completed', timestamp: hoursAgo(410), aiCompleted: true, subSteps: [
       { id: 'js-005-1', title: 'Call scheduled', timestamp: hoursAgo(440), aiCompleted: true },
       { id: 'js-005-2', title: 'Call completed', timestamp: hoursAgo(420), aiCompleted: true },
       { id: 'js-005-3', title: 'Info verified', timestamp: hoursAgo(410) },
@@ -942,7 +944,7 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(1079), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'completed', timestamp: hoursAgo(1060) },
     { id: 'j-004', title: 'Insurance Verification', status: 'completed', timestamp: hoursAgo(900), subSteps: [{ id: 'js-004-1', title: 'Medicare authorization approved' }] },
-    { id: 'j-005', title: 'Pre-Evaluation', status: 'completed', timestamp: hoursAgo(910), aiCompleted: true, subSteps: [
+    { id: 'j-005', title: 'Pre-Evaluation (AI Voice)', status: 'completed', timestamp: hoursAgo(910), aiCompleted: true, subSteps: [
       { id: 'js-005-1', title: 'Call scheduled', timestamp: hoursAgo(940), aiCompleted: true },
       { id: 'js-005-2', title: 'Call completed', timestamp: hoursAgo(920), aiCompleted: true },
       { id: 'js-005-3', title: 'Info verified', timestamp: hoursAgo(910) },
@@ -958,7 +960,7 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(71), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'in_progress', subSteps: [{ id: 'js-003-1', title: 'Additional documents received - re-review needed' }] },
     { id: 'j-004', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-005', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation (AI Voice)', status: 'pending' },
     { id: 'j-006', title: 'Clinical Evaluation', status: 'pending' },
     { id: 'j-007', title: 'Committee Review', status: 'pending' },
     { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
@@ -970,7 +972,7 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'in_progress', subSteps: [{ id: 'js-002-1', title: 'Urgent referral - prioritized processing', aiCompleted: true }] },
     { id: 'j-003', title: 'Human Verification', status: 'pending' },
     { id: 'j-004', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-005', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation (AI Voice)', status: 'pending' },
     { id: 'j-006', title: 'Clinical Evaluation', status: 'pending' },
     { id: 'j-007', title: 'Committee Review', status: 'pending' },
     { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
@@ -982,7 +984,7 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(239), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'completed', timestamp: hoursAgo(220) },
     { id: 'j-004', title: 'Insurance Verification', status: 'completed', timestamp: hoursAgo(96), subSteps: [{ id: 'js-004-1', title: 'UnitedHealthcare authorization approved' }] },
-    { id: 'j-005', title: 'Pre-Evaluation', status: 'in_progress', subSteps: [
+    { id: 'j-005', title: 'Pre-Evaluation (AI Voice)', status: 'in_progress', subSteps: [
       { id: 'js-005-1', title: 'Call scheduled', timestamp: hoursAgo(95), aiCompleted: true },
       { id: 'js-005-2', title: 'Call pending - scheduled in 2 days' },
     ] },
@@ -997,7 +999,7 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(2159), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'completed', timestamp: hoursAgo(2140) },
     { id: 'j-004', title: 'Insurance Verification', status: 'completed', timestamp: hoursAgo(2000) },
-    { id: 'j-005', title: 'Pre-Evaluation', status: 'completed', timestamp: hoursAgo(2040), aiCompleted: true, subSteps: [
+    { id: 'j-005', title: 'Pre-Evaluation (AI Voice)', status: 'completed', timestamp: hoursAgo(2040), aiCompleted: true, subSteps: [
       { id: 'js-005-1', title: 'Call scheduled', timestamp: hoursAgo(2090), aiCompleted: true },
       { id: 'js-005-2', title: 'Call completed', timestamp: hoursAgo(2050), aiCompleted: true },
       { id: 'js-005-3', title: 'Info verified', timestamp: hoursAgo(2040) },
@@ -1014,7 +1016,7 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(95), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'in_progress', subSteps: [{ id: 'js-003-1', title: 'Review updated referral information' }] },
     { id: 'j-004', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-005', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation (AI Voice)', status: 'pending' },
     { id: 'j-006', title: 'Clinical Evaluation', status: 'pending' },
     { id: 'j-007', title: 'Committee Review', status: 'pending' },
     { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
@@ -1035,7 +1037,7 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'in_progress', subSteps: [{ id: 'js-002-1', title: 'Processing referral packet', aiCompleted: true }] },
     { id: 'j-003', title: 'Human Verification', status: 'pending' },
     { id: 'j-004', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-005', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation (AI Voice)', status: 'pending' },
     { id: 'j-006', title: 'Clinical Evaluation', status: 'pending' },
     { id: 'j-007', title: 'Committee Review', status: 'pending' },
     { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
@@ -1047,7 +1049,7 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(671), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'completed', timestamp: hoursAgo(650) },
     { id: 'j-004', title: 'Insurance Verification', status: 'completed', timestamp: hoursAgo(500), subSteps: [{ id: 'js-004-1', title: 'UnitedHealthcare authorization approved' }] },
-    { id: 'j-005', title: 'Pre-Evaluation', status: 'completed', timestamp: hoursAgo(510), aiCompleted: true, subSteps: [
+    { id: 'j-005', title: 'Pre-Evaluation (AI Voice)', status: 'completed', timestamp: hoursAgo(510), aiCompleted: true, subSteps: [
       { id: 'js-005-1', title: 'Call scheduled', timestamp: hoursAgo(540), aiCompleted: true },
       { id: 'js-005-2', title: 'Call completed', timestamp: hoursAgo(520), aiCompleted: true },
       { id: 'js-005-3', title: 'Info verified', timestamp: hoursAgo(510) },
@@ -1063,7 +1065,7 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(839), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'completed', timestamp: hoursAgo(820) },
     { id: 'j-004', title: 'Insurance Verification', status: 'completed', timestamp: hoursAgo(700), subSteps: [{ id: 'js-004-1', title: 'Cigna authorization approved' }] },
-    { id: 'j-005', title: 'Pre-Evaluation', status: 'completed', timestamp: hoursAgo(710), aiCompleted: true, subSteps: [
+    { id: 'j-005', title: 'Pre-Evaluation (AI Voice)', status: 'completed', timestamp: hoursAgo(710), aiCompleted: true, subSteps: [
       { id: 'js-005-1', title: 'Call scheduled', timestamp: hoursAgo(740), aiCompleted: true },
       { id: 'js-005-2', title: 'Call completed', timestamp: hoursAgo(720), aiCompleted: true },
       { id: 'js-005-3', title: 'Info verified', timestamp: hoursAgo(710) },
@@ -1079,7 +1081,7 @@ export const patientJourneys: Record<string, JourneyStep[]> = {
     { id: 'j-002', title: 'AI Data Extraction', status: 'completed', timestamp: hoursAgo(119), aiCompleted: true },
     { id: 'j-003', title: 'Human Verification', status: 'in_progress', subSteps: [{ id: 'js-003-1', title: 'Requesting missing lab results' }] },
     { id: 'j-004', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-005', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-005', title: 'Pre-Evaluation (AI Voice)', status: 'pending' },
     { id: 'j-006', title: 'Clinical Evaluation', status: 'pending' },
     { id: 'j-007', title: 'Committee Review', status: 'pending' },
     { id: 'j-008', title: 'Synced to EMR', status: 'pending' },
@@ -1096,7 +1098,7 @@ export function getJourneyByPatientId(patientId: string): JourneyStep[] {
     { id: 'j-2', title: 'AI Data Extraction', status: 'pending' },
     { id: 'j-3', title: 'Human Verification', status: 'pending' },
     { id: 'j-4', title: 'Insurance Verification', status: 'pending' },
-    { id: 'j-5', title: 'Pre-Evaluation', status: 'pending' },
+    { id: 'j-5', title: 'Pre-Evaluation (AI Voice)', status: 'pending' },
     { id: 'j-6', title: 'Clinical Evaluation', status: 'pending' },
     { id: 'j-7', title: 'Committee Review', status: 'pending' },
     { id: 'j-8', title: 'Synced to EMR', status: 'pending' },
@@ -1354,4 +1356,54 @@ export function schedulePreEvaluationCall(
   preEval.scheduledCallTime = slotTime;
 
   return preEval;
+}
+
+// Update pre-evaluation with call results from Vapi
+export function updatePreEvaluationWithCallResults(
+  patientId: string,
+  callResults: {
+    medicalHistory: MedicalHistoryInfo;
+    lifestyleInfo: LifestyleInfo;
+    actualCallDuration: number;
+  }
+): PreEvaluationData {
+  let preEval = patientPreEvaluations[patientId];
+
+  if (!preEval) {
+    // Create a new pre-evaluation record if it doesn't exist
+    preEval = {
+      id: `pe-${patientId}`,
+      patientId,
+      status: 'notified',
+      notifiedAt: new Date().toISOString(),
+    };
+    patientPreEvaluations[patientId] = preEval;
+  }
+
+  // Update to completed status with extracted data
+  preEval.status = 'completed';
+  preEval.completedAt = new Date().toISOString();
+  preEval.actualCallDuration = callResults.actualCallDuration;
+  preEval.medicalHistory = callResults.medicalHistory;
+  preEval.lifestyleInfo = callResults.lifestyleInfo;
+
+  return preEval;
+}
+
+// Reset pre-evaluation for demo purposes
+export function resetPreEvaluation(patientId: string): void {
+  const preEval = patientPreEvaluations[patientId];
+  if (preEval) {
+    // Reset to notified status
+    preEval.status = 'notified';
+    preEval.scheduledAt = undefined;
+    preEval.scheduledCallTime = undefined;
+    preEval.completedAt = undefined;
+    preEval.actualCallDuration = undefined;
+    preEval.medicalHistory = undefined;
+    preEval.lifestyleInfo = undefined;
+    preEval.verifiedAt = undefined;
+    preEval.verifiedBy = undefined;
+    preEval.verificationNotes = undefined;
+  }
 }
