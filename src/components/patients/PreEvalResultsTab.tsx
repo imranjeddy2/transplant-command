@@ -16,10 +16,13 @@ import {
   MessageSquare,
   PhoneCall,
 } from 'lucide-react';
-import type { PreEvaluationData, PreEvaluationStatus, ExtractedField, ConfidenceLevel } from '@/types';
+import type { PreEvaluationData, PreEvaluationStatus, ExtractedField, ConfidenceLevel, RiskAssessment } from '@/types';
+import { RiskAssessmentPanel } from '@/components/risk';
 
 interface PreEvalResultsTabProps {
   preEvaluation: PreEvaluationData | null;
+  riskAssessment?: RiskAssessment | null;
+  patientName?: string;
 }
 
 const statusConfig: Record<
@@ -169,7 +172,7 @@ function StatusTimeline({ preEvaluation }: { preEvaluation: PreEvaluationData })
   );
 }
 
-export function PreEvalResultsTab({ preEvaluation }: PreEvalResultsTabProps) {
+export function PreEvalResultsTab({ preEvaluation, riskAssessment, patientName }: PreEvalResultsTabProps) {
   if (!preEvaluation) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -190,10 +193,25 @@ export function PreEvalResultsTab({ preEvaluation }: PreEvalResultsTabProps) {
 
   return (
     <div className="space-y-6">
+      {/* Risk Assessment - First (most important) */}
+      {hasResults && riskAssessment && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <RiskAssessmentPanel
+            assessment={riskAssessment}
+            patientName={patientName || 'Patient'}
+          />
+        </motion.div>
+      )}
+
       {/* Status Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
         className="bg-card rounded-lg border border-border p-6"
       >
         <div className="flex items-center justify-between mb-6">
@@ -231,7 +249,7 @@ export function PreEvalResultsTab({ preEvaluation }: PreEvalResultsTabProps) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.3 }}
           className="bg-card rounded-lg border border-border p-6"
         >
           <div className="flex items-center gap-2 mb-4">
@@ -268,7 +286,7 @@ export function PreEvalResultsTab({ preEvaluation }: PreEvalResultsTabProps) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.4 }}
           className="bg-card rounded-lg border border-border p-6"
         >
           <div className="flex items-center gap-2 mb-4">
@@ -305,7 +323,7 @@ export function PreEvalResultsTab({ preEvaluation }: PreEvalResultsTabProps) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.5 }}
           className="bg-card rounded-lg border border-border p-6"
         >
           <div className="flex items-center gap-2 mb-4">

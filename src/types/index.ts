@@ -237,3 +237,122 @@ export interface SchedulePatientData {
   preEvaluationId: string;
   centerId: string;
 }
+
+// Risk Assessment Types
+export type RiskLevel = 'HIGH' | 'MEDIUM' | 'LOW';
+export type RiskFactorCategory = 'cardiac' | 'diabetes' | 'dialysis' | 'sensitization' | 'cancer' | 'lifestyle' | 'compliance' | 'functional';
+
+export interface RiskFactor {
+  id: string;
+  category: RiskFactorCategory;
+  name: string;
+  value: string;
+  impact: 'high' | 'medium' | 'low';
+  points: number;
+  description: string;
+}
+
+export interface RiskAssessment {
+  patientId: string;
+  calculatedLevel: RiskLevel;
+  overrideLevel?: RiskLevel;
+  overrideReason?: string;
+  overrideBy?: string;
+  overrideAt?: string;
+  totalScore: number;
+  confidenceScore: number;
+  factors: RiskFactor[];
+  createdAt: string;
+}
+
+// Risk Analytics Types
+export interface RiskDistribution {
+  high: number;
+  medium: number;
+  low: number;
+}
+
+export interface VariableImportance {
+  variable: string;
+  importance: number;
+  category: string;
+}
+
+export interface RiskAnalyticsData {
+  distribution: RiskDistribution;
+  variableImportance: VariableImportance[];
+  modelConfidence: number;
+  totalAssessed: number;
+}
+
+// Model Performance Analytics
+export interface ModelPerformanceMetric {
+  name: string;
+  technicalName: string;
+  value: number;
+  benchmark: number;
+  description: string;
+}
+
+export interface ModelPerformanceData {
+  metrics: ModelPerformanceMetric[];
+  validationInfo: {
+    sampleSize: number;
+    validationPeriod: string;
+    lastUpdated: string;
+  };
+}
+
+// Calibration Analytics
+export interface CalibrationDecile {
+  predictedRisk: number;
+  actualOutcomes: number;
+  patientCount: number;
+}
+
+export interface CalibrationData {
+  deciles: CalibrationDecile[];
+  interpretation: string;
+}
+
+// Risk Distribution Histogram
+export interface RiskHistogramBin {
+  scoreRange: string;
+  scoreMidpoint: number;
+  count: number;
+  percentage: number;
+}
+
+export interface RiskDistributionData {
+  histogram: RiskHistogramBin[];
+  thresholds: { lowToMedium: number; mediumToHigh: number };
+  statistics: { mean: number; median: number; standardDeviation: number };
+}
+
+// Outcome Tracking
+export interface MonthlyOutcome {
+  month: string;
+  predictedHighRisk: number;
+  actualComplications: number;
+  truePositives: number;
+}
+
+export interface OutcomeTrackingData {
+  monthly: MonthlyOutcome[];
+  aggregate: {
+    overallAccuracy: number;
+    trend: 'improving' | 'stable' | 'declining';
+  };
+}
+
+// Call Transcript
+export interface PatientCall {
+  id: string;
+  patientId: string;
+  date: string;
+  duration: number;
+  coordinator: string;
+  status: 'completed' | 'scheduled' | 'cancelled' | 'missed';
+  transcript?: string;
+  summary?: string;
+}

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Filter, Search } from 'lucide-react';
-import { patients } from '@/data/mockData';
+import { Filter, Search, Users } from 'lucide-react';
+import { patients, getRiskAssessmentByPatientId } from '@/data/mockData';
 import type { PatientStatus } from '@/types';
+import { RiskBadge } from '@/components/risk';
 
 const statusConfig: Record<PatientStatus, { label: string; color: string; bgColor: string }> = {
   referral_received: {
@@ -73,10 +74,17 @@ export function PatientList() {
   return (
     <div className="p-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-foreground">Patients</h1>
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8"
+      >
+        <div className="flex items-center gap-3 mb-1">
+          <Users className="h-6 w-6 text-primary" />
+          <h1 className="text-2xl font-semibold text-foreground">Patients</h1>
+        </div>
         <p className="text-muted-foreground mt-1">View and manage transplant referral patients</p>
-      </div>
+      </motion.div>
 
       {/* Filter Bar */}
       <div className="bg-card rounded-xl shadow-sm border border-border p-4 mb-6">
@@ -126,6 +134,9 @@ export function PatientList() {
                 Status
               </th>
               <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                Risk
+              </th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
                 Referral Date
               </th>
               <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
@@ -136,6 +147,8 @@ export function PatientList() {
           <tbody>
             {filteredPatients.map((patient, index) => {
               const status = statusConfig[patient.status];
+              const riskAssessment = getRiskAssessmentByPatientId(patient.id);
+              const effectiveRisk = riskAssessment?.overrideLevel || riskAssessment?.calculatedLevel;
 
               return (
                 <motion.tr
@@ -162,6 +175,18 @@ export function PatientList() {
                     </span>
                   </td>
                   <td className="py-3 px-4">
+                    {effectiveRisk ? (
+                      <RiskBadge
+                        level={effectiveRisk}
+                        size="sm"
+                        showLabel={false}
+                        isOverridden={!!riskAssessment?.overrideLevel}
+                      />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </td>
+                  <td className="py-3 px-4">
                     <span className="text-sm text-muted-foreground">
                       {formatDate(patient.referralDate)}
                     </span>
@@ -178,9 +203,21 @@ export function PatientList() {
         </table>
 
         {filteredPatients.length === 0 && (
-          <div className="py-12 text-center">
-            <p className="text-muted-foreground">No patients found matching your criteria.</p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="py-16 text-center"
+          >
+            <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Search className="h-8 w-8 text-primary/50" />
+            </div>
+            <h3 className="text-lg font-medium text-foreground mb-1">No patients found</h3>
+            <p className="text-muted-foreground max-w-sm mx-auto">
+              {searchQuery
+                ? `No patients match "${searchQuery}". Try adjusting your search.`
+                : 'No patients match the selected filter. Try selecting "All Patients".'}
+            </p>
+          </motion.div>
         )}
       </div>
 

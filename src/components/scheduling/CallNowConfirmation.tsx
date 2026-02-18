@@ -100,9 +100,9 @@ export function CallNowConfirmation({ patientPhone, center, callId, patientId }:
   const {
     status,
     startedAt,
-    endedAt,
+    endedAt: _endedAt,
     duration,
-    extractedData,
+    extractedData: _extractedData,
     error,
     startPolling,
   } = useCallStatus({

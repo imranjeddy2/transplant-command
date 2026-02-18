@@ -24,17 +24,20 @@ import {
   getDocumentsByPatientId,
   getJourneyByPatientId,
   getPreEvaluationByPatientId,
+  getRiskAssessmentByPatientId,
   patients,
 } from '@/data/mockData';
 import type { JourneyStep, JourneyStepStatus } from '@/types';
 import { PreEvalResultsTab } from './PreEvalResultsTab';
+import { CallsTab } from './CallsTab';
 
-type TabKey = 'journey' | 'tasks' | 'pre-eval' | 'insurance' | 'documents';
+type TabKey = 'journey' | 'tasks' | 'pre-eval' | 'calls' | 'insurance' | 'documents';
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'journey', label: 'Patient Journey' },
   { key: 'tasks', label: 'Tasks' },
   { key: 'pre-eval', label: 'Pre-Eval Results' },
+  { key: 'calls', label: 'Calls' },
   { key: 'insurance', label: 'Insurance' },
   { key: 'documents', label: 'Documents' },
 ];
@@ -191,6 +194,7 @@ export function PatientProfile() {
   // Get patient-specific journey data
   const journey = getJourneyByPatientId(patientId || '');
   const preEvaluation = getPreEvaluationByPatientId(patientId || '');
+  const riskAssessment = getRiskAssessmentByPatientId(patientId || '');
 
   if (!patient) {
     return (
@@ -476,7 +480,20 @@ export function PatientProfile() {
             </>
           )}
 
-          {activeTab === 'pre-eval' && <PreEvalResultsTab preEvaluation={preEvaluation} />}
+          {activeTab === 'pre-eval' && (
+            <PreEvalResultsTab
+              preEvaluation={preEvaluation}
+              riskAssessment={riskAssessment}
+              patientName={`${patient.firstName} ${patient.lastName}`}
+            />
+          )}
+
+          {activeTab === 'calls' && (
+            <CallsTab
+              patientId={patient.id}
+              patientName={`${patient.firstName} ${patient.lastName}`}
+            />
+          )}
         </div>
       </div>
     </div>

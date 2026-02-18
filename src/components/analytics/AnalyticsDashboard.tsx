@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { TrendingUp, Users, Clock, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 import { trendData, insuranceBreakdown, analyticsMetrics } from '@/data/mockData';
+import { RiskAnalyticsSection } from './RiskAnalyticsSection';
 
 const COLORS = ['#9333EA', '#10B981', '#3B82F6', '#F59E0B', '#EC4899'];
 
@@ -63,6 +64,11 @@ export function AnalyticsDashboard() {
         <p className="text-muted-foreground mt-1">
           Operational metrics and transplant referral insights
         </p>
+      </div>
+
+      {/* Risk Assessment Analytics - FIRST */}
+      <div className="mb-8">
+        <RiskAnalyticsSection />
       </div>
 
       {/* Metric Cards */}

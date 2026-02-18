@@ -11,6 +11,13 @@ import type {
   SchedulePatientData,
   MedicalHistoryInfo,
   LifestyleInfo,
+  RiskAssessment,
+  RiskAnalyticsData,
+  ModelPerformanceData,
+  CalibrationData,
+  RiskDistributionData,
+  OutcomeTrackingData,
+  PatientCall,
 } from '@/types';
 
 // Helper to generate dates
@@ -668,6 +675,33 @@ export const documents: Document[] = [
 
 // Pre-Evaluation data for advanced patients (evaluation_scheduled, evaluation_complete, waitlisted, transplanted)
 export const patientPreEvaluations: Record<string, PreEvaluationData> = {
+  // p-001: John Smith - under_review (pre-eval completed)
+  'p-001': {
+    id: 'pe-001',
+    patientId: 'p-001',
+    status: 'info_verified',
+    notifiedAt: hoursAgo(48),
+    scheduledAt: hoursAgo(46),
+    scheduledCallTime: hoursAgo(24),
+    completedAt: hoursAgo(24),
+    verifiedAt: hoursAgo(20),
+    actualCallDuration: 18,
+    medicalHistory: {
+      previousSurgeries: { value: 'Coronary stent placement (2021), Laser eye treatment for retinopathy (2019)', confidence: 'high' },
+      currentMedications: { value: 'Metformin 1000mg twice daily, Lisinopril 20mg daily, Carvedilol 25mg twice daily, Aspirin 81mg daily, Insulin glargine 30 units nightly', confidence: 'high' },
+      allergies: { value: 'No known drug allergies', confidence: 'high' },
+      symptoms: { value: 'Neuropathy in feet, fatigue, occasional chest discomfort with exertion', confidence: 'high' },
+    },
+    lifestyleInfo: {
+      supportSystem: { value: 'Wife works full-time, alone during day, limited family nearby', confidence: 'medium' },
+      transportation: { value: 'Can drive himself, wife available evenings/weekends', confidence: 'high' },
+      livingSituation: { value: 'Two-story home, bedroom upstairs, considering moving to first floor', confidence: 'high' },
+      complianceHistory: { value: 'Generally good, occasionally misses evening medications when tired', confidence: 'medium' },
+    },
+    verifiedBy: 'Coordinator Sarah Miller',
+    verificationNotes: 'Patient has significant cardiac history. Cardiology clearance recommended before transplant listing.',
+  },
+
   // p-002: Jane Doe - evaluation_scheduled (pre-eval completed)
   'p-002': {
     id: 'pe-002',
@@ -1406,4 +1440,909 @@ export function resetPreEvaluation(patientId: string): void {
     preEval.verifiedBy = undefined;
     preEval.verificationNotes = undefined;
   }
+}
+
+// ============================================================
+// RISK ASSESSMENT DATA
+// ============================================================
+
+// Risk assessments for patients with completed pre-evaluations
+export const patientRiskAssessments: Record<string, RiskAssessment> = {
+  // John Smith (p-001) - HIGH Risk: Diabetes + Cardiac + Limited support
+  'p-001': {
+    patientId: 'p-001',
+    calculatedLevel: 'HIGH',
+    totalScore: 72,
+    confidenceScore: 91,
+    createdAt: hoursAgo(1),
+    factors: [
+      {
+        id: 'rf-001-1',
+        category: 'cardiac',
+        name: 'Heart Failure',
+        value: 'EF 35%, diagnosed 2021',
+        impact: 'high',
+        points: 15,
+        description: 'Reduced ejection fraction indicates significant cardiac compromise',
+      },
+      {
+        id: 'rf-001-2',
+        category: 'cardiac',
+        name: 'Heart Attack with Stents',
+        value: '2 stents placed in 2021',
+        impact: 'high',
+        points: 15,
+        description: 'History of MI with coronary intervention',
+      },
+      {
+        id: 'rf-001-3',
+        category: 'diabetes',
+        name: 'Diabetic Neuropathy',
+        value: 'Bilateral lower extremity',
+        impact: 'medium',
+        points: 4,
+        description: 'Peripheral neuropathy affecting feet',
+      },
+      {
+        id: 'rf-001-4',
+        category: 'diabetes',
+        name: 'Diabetic Retinopathy',
+        value: 'Laser treatment performed',
+        impact: 'medium',
+        points: 5,
+        description: 'Required photocoagulation therapy',
+      },
+      {
+        id: 'rf-001-5',
+        category: 'diabetes',
+        name: 'Type 2 Diabetes Duration',
+        value: '22 years',
+        impact: 'medium',
+        points: 6,
+        description: 'Long-standing diabetes increases complication risk',
+      },
+      {
+        id: 'rf-001-6',
+        category: 'lifestyle',
+        name: 'Former Smoker',
+        value: '30 pack-years, quit 2021',
+        impact: 'medium',
+        points: 4,
+        description: 'Significant smoking history affects cardiovascular risk',
+      },
+      {
+        id: 'rf-001-7',
+        category: 'lifestyle',
+        name: 'Limited Support System',
+        value: 'Spouse works full-time, alone during day',
+        impact: 'medium',
+        points: 6,
+        description: 'May need additional post-transplant support arrangements',
+      },
+      {
+        id: 'rf-001-8',
+        category: 'dialysis',
+        name: 'Dialysis Duration',
+        value: '18 months on hemodialysis',
+        impact: 'low',
+        points: 2,
+        description: 'Moderate dialysis duration',
+      },
+    ],
+  },
+
+  // Linda Martinez (p-008) - HIGH Risk: Previous transplant + Cardiac + Long dialysis
+  'p-008': {
+    patientId: 'p-008',
+    calculatedLevel: 'HIGH',
+    totalScore: 65,
+    confidenceScore: 88,
+    createdAt: hoursAgo(100),
+    factors: [
+      {
+        id: 'rf-008-1',
+        category: 'sensitization',
+        name: 'Previous Failed Transplant',
+        value: 'Kidney transplant 2018, failed 2020 (rejection)',
+        impact: 'high',
+        points: 8,
+        description: 'Prior transplant failure increases sensitization and rejection risk',
+      },
+      {
+        id: 'rf-008-2',
+        category: 'cardiac',
+        name: 'Bypass Surgery',
+        value: 'Triple bypass in 2019',
+        impact: 'high',
+        points: 8,
+        description: 'History of coronary artery bypass grafting',
+      },
+      {
+        id: 'rf-008-3',
+        category: 'dialysis',
+        name: 'Extended Dialysis Duration',
+        value: '3.5 years on hemodialysis',
+        impact: 'medium',
+        points: 5,
+        description: 'Prolonged dialysis associated with increased complications',
+      },
+      {
+        id: 'rf-008-4',
+        category: 'dialysis',
+        name: 'Dialysis Complications',
+        value: 'Fistula revised twice, hypotension episodes',
+        impact: 'medium',
+        points: 4,
+        description: 'Access complications and intradialytic hypotension',
+      },
+      {
+        id: 'rf-008-5',
+        category: 'diabetes',
+        name: 'Type 2 Diabetes',
+        value: 'Diagnosed 15 years ago',
+        impact: 'medium',
+        points: 6,
+        description: 'Long-standing diabetes with renal complications',
+      },
+      {
+        id: 'rf-008-6',
+        category: 'sensitization',
+        name: 'Blood Transfusions',
+        value: '4 units during transplant surgery',
+        impact: 'medium',
+        points: 4,
+        description: 'Prior transfusions may increase antibody levels',
+      },
+    ],
+  },
+
+  // Maria Garcia (p-004) - MEDIUM Risk: Lupus, good support, compliant
+  'p-004': {
+    patientId: 'p-004',
+    calculatedLevel: 'MEDIUM',
+    totalScore: 38,
+    confidenceScore: 85,
+    createdAt: hoursAgo(410),
+    factors: [
+      {
+        id: 'rf-004-1',
+        category: 'dialysis',
+        name: 'Dialysis Duration',
+        value: '18 months on hemodialysis',
+        impact: 'low',
+        points: 2,
+        description: 'Moderate dialysis duration',
+      },
+      {
+        id: 'rf-004-2',
+        category: 'compliance',
+        name: 'Immunosuppression History',
+        value: 'On prednisone and tacrolimus for lupus',
+        impact: 'medium',
+        points: 4,
+        description: 'Already experienced with immunosuppressive medications',
+      },
+      {
+        id: 'rf-004-3',
+        category: 'lifestyle',
+        name: 'Strong Support System',
+        value: 'Lives with parents, sister is a nurse',
+        impact: 'low',
+        points: -3,
+        description: 'Excellent family support reduces post-transplant risk',
+      },
+      {
+        id: 'rf-004-4',
+        category: 'compliance',
+        name: 'Excellent Compliance',
+        value: 'Uses pill organizer, no missed doses',
+        impact: 'low',
+        points: -2,
+        description: 'Strong medication adherence history',
+      },
+    ],
+  },
+
+  // Jennifer Harris (p-014) - MEDIUM Risk: PKD, minimal comorbidities
+  'p-014': {
+    patientId: 'p-014',
+    calculatedLevel: 'MEDIUM',
+    totalScore: 35,
+    confidenceScore: 89,
+    createdAt: hoursAgo(710),
+    factors: [
+      {
+        id: 'rf-014-1',
+        category: 'dialysis',
+        name: 'Dialysis Duration',
+        value: '2 years on hemodialysis',
+        impact: 'low',
+        points: 3,
+        description: 'Moderate dialysis exposure',
+      },
+      {
+        id: 'rf-014-2',
+        category: 'sensitization',
+        name: 'Prior Pregnancies',
+        value: '2 pregnancies (C-section)',
+        impact: 'low',
+        points: 3,
+        description: 'Pregnancies may contribute to sensitization',
+      },
+      {
+        id: 'rf-014-3',
+        category: 'lifestyle',
+        name: 'Good Support System',
+        value: 'Husband with flexible job, teenage children',
+        impact: 'low',
+        points: -2,
+        description: 'Adequate family support available',
+      },
+      {
+        id: 'rf-014-4',
+        category: 'compliance',
+        name: 'Proactive Patient',
+        value: 'Very engaged in health management',
+        impact: 'low',
+        points: -2,
+        description: 'Demonstrated commitment to health',
+      },
+    ],
+  },
+
+  // David Anderson (p-009) - LOW Risk: Pre-emptive, no comorbidities, ideal
+  'p-009': {
+    patientId: 'p-009',
+    calculatedLevel: 'LOW',
+    totalScore: 15,
+    confidenceScore: 94,
+    createdAt: hoursAgo(2040),
+    factors: [
+      {
+        id: 'rf-009-1',
+        category: 'dialysis',
+        name: 'Pre-Dialysis',
+        value: 'Pre-emptive transplant evaluation',
+        impact: 'low',
+        points: 0,
+        description: 'Not yet on dialysis - optimal timing',
+      },
+      {
+        id: 'rf-009-2',
+        category: 'lifestyle',
+        name: 'Never Smoked',
+        value: 'No tobacco history',
+        impact: 'low',
+        points: 0,
+        description: 'No smoking-related cardiovascular risk',
+      },
+      {
+        id: 'rf-009-3',
+        category: 'lifestyle',
+        name: 'Excellent Support System',
+        value: 'Wife works from home, extended family nearby',
+        impact: 'low',
+        points: -3,
+        description: 'Ideal support network for recovery',
+      },
+      {
+        id: 'rf-009-4',
+        category: 'compliance',
+        name: 'Excellent Compliance',
+        value: 'Never missed medication dose',
+        impact: 'low',
+        points: -3,
+        description: 'Perfect medication adherence',
+      },
+      {
+        id: 'rf-009-5',
+        category: 'functional',
+        name: 'Fully Independent',
+        value: 'Active lifestyle, exercises regularly',
+        impact: 'low',
+        points: -2,
+        description: 'No functional limitations',
+      },
+    ],
+  },
+
+  // William Brown (p-005) - MEDIUM Risk: Waitlisted patient
+  'p-005': {
+    patientId: 'p-005',
+    calculatedLevel: 'MEDIUM',
+    totalScore: 42,
+    confidenceScore: 86,
+    createdAt: hoursAgo(910),
+    factors: [
+      {
+        id: 'rf-005-1',
+        category: 'dialysis',
+        name: 'Extended Dialysis Duration',
+        value: '2.5 years on hemodialysis',
+        impact: 'medium',
+        points: 4,
+        description: 'Prolonged time on dialysis',
+      },
+      {
+        id: 'rf-005-2',
+        category: 'dialysis',
+        name: 'Dialysis Complications',
+        value: 'Leg cramps, shortness of breath',
+        impact: 'low',
+        points: 2,
+        description: 'Some intradialytic symptoms reported',
+      },
+      {
+        id: 'rf-005-3',
+        category: 'compliance',
+        name: 'Occasional Missed Medications',
+        value: 'Sometimes misses evening doses',
+        impact: 'low',
+        points: 2,
+        description: 'Minor compliance issues noted',
+      },
+      {
+        id: 'rf-005-4',
+        category: 'lifestyle',
+        name: 'Good Support',
+        value: 'Lives with wife, daughter visits weekly',
+        impact: 'low',
+        points: -1,
+        description: 'Adequate support system',
+      },
+    ],
+  },
+
+  // Richard White (p-013) - HIGH Risk: Diabetic with cardiac and compliance
+  'p-013': {
+    patientId: 'p-013',
+    calculatedLevel: 'HIGH',
+    totalScore: 61,
+    confidenceScore: 87,
+    createdAt: hoursAgo(510),
+    factors: [
+      {
+        id: 'rf-013-1',
+        category: 'diabetes',
+        name: 'Diabetic Neuropathy',
+        value: 'Feet affected, uses special footwear',
+        impact: 'medium',
+        points: 4,
+        description: 'Peripheral neuropathy present',
+      },
+      {
+        id: 'rf-013-2',
+        category: 'diabetes',
+        name: 'Diabetic Retinopathy',
+        value: 'Cataract surgery, vision changes',
+        impact: 'medium',
+        points: 5,
+        description: 'Eye complications from diabetes',
+      },
+      {
+        id: 'rf-013-3',
+        category: 'cardiac',
+        name: 'Coronary Stents',
+        value: 'Stent placement 2020',
+        impact: 'medium',
+        points: 5,
+        description: 'History of coronary intervention',
+      },
+      {
+        id: 'rf-013-4',
+        category: 'lifestyle',
+        name: 'Lives Alone',
+        value: 'Sister nearby, church community support',
+        impact: 'medium',
+        points: 4,
+        description: 'May need additional support coordination',
+      },
+      {
+        id: 'rf-013-5',
+        category: 'functional',
+        name: 'Transportation Dependent',
+        value: 'No longer drives, relies on others',
+        impact: 'medium',
+        points: 3,
+        description: 'Requires transportation assistance',
+      },
+      {
+        id: 'rf-013-6',
+        category: 'dialysis',
+        name: 'Dialysis Duration',
+        value: '20 months on hemodialysis',
+        impact: 'low',
+        points: 2,
+        description: 'Moderate dialysis duration',
+      },
+    ],
+  },
+
+  // Jane Doe (p-002) - MEDIUM Risk: Evaluation scheduled
+  'p-002': {
+    patientId: 'p-002',
+    calculatedLevel: 'MEDIUM',
+    totalScore: 32,
+    confidenceScore: 90,
+    createdAt: hoursAgo(135),
+    factors: [
+      {
+        id: 'rf-002-1',
+        category: 'dialysis',
+        name: 'Peritoneal Dialysis',
+        value: '2 years on PD',
+        impact: 'low',
+        points: 3,
+        description: 'Home dialysis modality',
+      },
+      {
+        id: 'rf-002-2',
+        category: 'lifestyle',
+        name: 'Strong Support',
+        value: 'Spouse, adult children nearby',
+        impact: 'low',
+        points: -2,
+        description: 'Excellent family support',
+      },
+      {
+        id: 'rf-002-3',
+        category: 'compliance',
+        name: 'Excellent Adherence',
+        value: 'Attends all dialysis appointments',
+        impact: 'low',
+        points: -2,
+        description: 'Perfect attendance record',
+      },
+    ],
+  },
+};
+
+// Call transcripts for patients with completed pre-evaluations
+export const patientTranscripts: Record<string, string> = {
+  'p-001': `Coordinator: Hello, may I speak with John?
+Patient: Yes, this is John Smith speaking.
+
+Coordinator: Hi John, I'm calling from the transplant clinic regarding your kidney transplant evaluation. Is this a good time to talk for about 15 minutes?
+Patient: Yes, that's fine.
+
+Coordinator: Great. Can you confirm your date of birth for me?
+Patient: March 15th, 1958.
+
+Coordinator: Thank you. Now, who is your nephrologist?
+Patient: Dr. Sarah Johnson at Midwest Nephrology.
+
+Coordinator: And what caused your kidney disease?
+Patient: It was from diabetes. I've had Type 2 for about 22 years now.
+
+Coordinator: Any complications from the diabetes?
+Patient: Yes, I have neuropathy in my feet - can't feel much below my ankles. And I had some laser treatment for my eyes a few years back - retinopathy they said.
+
+Coordinator: I understand. Any heart problems?
+Patient: I had a heart attack back in 2021. They put in two stents. I also take medication for heart failure now - my ejection fraction is around 35%.
+
+Coordinator: Are you currently on dialysis?
+Patient: Yes, hemodialysis. I started in June 2023.
+
+Coordinator: What days do you go and how long are your sessions?
+Patient: Monday, Wednesday, Friday. Each session is about 4 hours.
+
+Coordinator: Any complications with dialysis?
+Patient: Sometimes my blood pressure drops during treatment, but it's manageable.
+
+Coordinator: Do you smoke?
+Patient: I quit after the heart attack. But I smoked for 30 years, about a pack a day.
+
+Coordinator: Any alcohol or recreational drugs?
+Patient: Just the occasional beer. Never any drugs.
+
+Coordinator: Who will help you after transplant surgery?
+Patient: My wife works full-time, but she said she can take a week off. After that I'll mostly be on my own during the day.
+
+Coordinator: How are you with taking your medications?
+Patient: Pretty good. I use a pill organizer. Sometimes I forget the evening dose if I'm tired, but mostly I'm on top of it.
+
+Coordinator: Thank you, John. I'll send this information to our transplant team for review. We'll be in touch with next steps.`,
+
+  'p-008': `Coordinator: Hello, may I speak with Linda?
+Patient: Yes, this is Linda Martinez.
+
+Coordinator: Hi Linda, I'm calling from the transplant clinic. Is this a good time?
+Patient: Yes, go ahead.
+
+Coordinator: Can you confirm your date of birth?
+Patient: February 25th, 1962.
+
+Coordinator: Have you had a transplant before?
+Patient: Yes, I had one in 2018 but it failed after about 2 years. Rejection.
+
+Coordinator: I'm sorry to hear that. How long have you been on dialysis?
+Patient: Since the transplant failed, so about 3 and a half years now. I go Monday, Wednesday, Friday for 4 hours each.
+
+Coordinator: Any complications with dialysis?
+Patient: My fistula has had problems - I've had it revised twice. And I get pretty bad cramping and low blood pressure sometimes.
+
+Coordinator: Any heart problems?
+Patient: I had bypass surgery in 2019 - triple bypass. But I'm doing okay now, I see my cardiologist every 3 months.
+
+Coordinator: Are you diabetic?
+Patient: Yes, Type 2. About 15 years now. I take metformin and insulin.
+
+Coordinator: Any diabetes complications?
+Patient: Some numbness in my feet, but no major issues.
+
+Coordinator: Who will support you after surgery?
+Patient: My daughter lives with me. She works from home so she's very available.
+
+Coordinator: How is your medication compliance?
+Patient: Very good. I never miss my dialysis and I take all my medications on time.
+
+Coordinator: Thank you, Linda. We'll review this information and be in touch.`,
+
+  'p-004': `Coordinator: Hello, is this Maria Garcia?
+Patient: Yes, speaking.
+
+Coordinator: Hi Maria, I'm calling from the transplant clinic regarding your evaluation. Is now a good time?
+Patient: Yes, that's fine.
+
+Coordinator: Can you confirm your date of birth?
+Patient: April 30th, 1980.
+
+Coordinator: What caused your kidney disease?
+Patient: Lupus nephritis. I was diagnosed with lupus when I was 25, and it eventually affected my kidneys.
+
+Coordinator: Any heart problems?
+Patient: No, my heart is healthy. I have regular check-ups.
+
+Coordinator: Are you on dialysis?
+Patient: Yes, hemodialysis since January 2023. Three times a week.
+
+Coordinator: Any complications?
+Patient: No, it's been going smoothly.
+
+Coordinator: Do you smoke or drink?
+Patient: Never smoked. I have an occasional glass of wine with dinner, maybe once a week.
+
+Coordinator: Who will help you after surgery?
+Patient: I live with my parents and they're both retired. My sister also lives nearby and she's a nurse. They're all very supportive.
+
+Coordinator: How is your medication compliance?
+Patient: Very good. I use a pill organizer and phone reminders. I haven't missed any doses in months.
+
+Coordinator: That's excellent. Thank you, Maria. Our team will review and contact you soon.`,
+
+  'p-009': `Coordinator: Hello, may I speak with David Anderson?
+Patient: Yes, this is David.
+
+Coordinator: Hi David, I'm calling from the transplant clinic. Do you have about 15 minutes?
+Patient: Sure, go ahead.
+
+Coordinator: Can you confirm your date of birth?
+Patient: August 7th, 1970.
+
+Coordinator: What caused your kidney disease?
+Patient: IgA nephropathy - it's an autoimmune condition. They caught it early through routine bloodwork.
+
+Coordinator: Are you on dialysis?
+Patient: Not yet. My doctor says I'm getting close but we're trying to do a pre-emptive transplant before I need dialysis.
+
+Coordinator: That's ideal. Any diabetes or heart problems?
+Patient: No diabetes, no heart problems. I exercise regularly and try to eat healthy.
+
+Coordinator: Have you ever smoked?
+Patient: Never. I've never used drugs either. Maybe a beer occasionally but that's it.
+
+Coordinator: Have you had any surgeries?
+Patient: Just a hernia repair back in 2005. Nothing major.
+
+Coordinator: Who will support you after surgery?
+Patient: My wife works from home and my son is in high school. We have great family support - my parents live 20 minutes away.
+
+Coordinator: How are you with taking medications?
+Patient: Very disciplined. I've never missed a dose of my blood pressure medication.
+
+Coordinator: Excellent. You sound like an ideal candidate. Our team will be in touch very soon.`,
+
+  'p-014': `Coordinator: Hello, is this Jennifer Harris?
+Patient: Yes, it is.
+
+Coordinator: Hi Jennifer, I'm calling from the transplant center. Is this a good time?
+Patient: Yes, I've been expecting your call.
+
+Coordinator: Can you confirm your date of birth?
+Patient: March 28th, 1974.
+
+Coordinator: What caused your kidney disease?
+Patient: Polycystic kidney disease - it runs in my family. My mother had it too.
+
+Coordinator: Are you diabetic?
+Patient: No, I'm not diabetic.
+
+Coordinator: Any heart problems?
+Patient: No heart problems. Just the kidney issues.
+
+Coordinator: Are you on dialysis?
+Patient: Yes, hemodialysis for about 2 years now.
+
+Coordinator: Any complications?
+Patient: Some back pain from my enlarged kidneys, but dialysis itself goes well.
+
+Coordinator: Have you had any major surgeries?
+Patient: I had a C-section in 2008 and had a cyst removed laparoscopically in 2015. That's it.
+
+Coordinator: Any allergies?
+Patient: Yes, shellfish - I have anaphylaxis, so I carry an EpiPen.
+
+Coordinator: Do you have any support at home?
+Patient: Yes, I live with my husband and two teenagers. My husband has a flexible job and can work from home when needed.
+
+Coordinator: How is your medication compliance?
+Patient: Excellent. I'm very proactive about my health. I track everything in an app.
+
+Coordinator: That's great to hear. We'll review your information and be in touch with next steps.`,
+};
+
+// Risk analytics data for the analytics dashboard
+export const riskAnalyticsData: RiskAnalyticsData = {
+  distribution: {
+    high: 23,
+    medium: 45,
+    low: 32,
+  },
+  variableImportance: [
+    { variable: 'Cardiac History', importance: 18, category: 'cardiac' },
+    { variable: 'Diabetes Complications', importance: 15, category: 'diabetes' },
+    { variable: 'Previous Transplant', importance: 12, category: 'sensitization' },
+    { variable: 'Dialysis Duration', importance: 10, category: 'dialysis' },
+    { variable: 'Smoking Status', importance: 9, category: 'lifestyle' },
+    { variable: 'Support System', importance: 8, category: 'lifestyle' },
+    { variable: 'Medication Compliance', importance: 8, category: 'compliance' },
+    { variable: 'Cancer History', importance: 7, category: 'cancer' },
+    { variable: 'Functional Status', importance: 6, category: 'functional' },
+    { variable: 'Sensitization Events', importance: 5, category: 'sensitization' },
+  ],
+  modelConfidence: 87,
+  totalAssessed: 127,
+};
+
+// Helper functions for risk data
+export function getRiskAssessmentByPatientId(patientId: string): RiskAssessment | null {
+  return patientRiskAssessments[patientId] || null;
+}
+
+export function getTranscriptByPatientId(patientId: string): string | null {
+  return patientTranscripts[patientId] || null;
+}
+
+// Update risk assessment (for manual override)
+export function updateRiskAssessment(
+  patientId: string,
+  updates: {
+    overrideLevel?: RiskAssessment['overrideLevel'];
+    overrideReason?: string;
+    overrideBy?: string;
+  }
+): RiskAssessment | null {
+  const assessment = patientRiskAssessments[patientId];
+  if (!assessment) return null;
+
+  if (updates.overrideLevel) {
+    assessment.overrideLevel = updates.overrideLevel;
+    assessment.overrideReason = updates.overrideReason;
+    assessment.overrideBy = updates.overrideBy;
+    assessment.overrideAt = new Date().toISOString();
+  }
+
+  return assessment;
+}
+
+// ============================================================
+// ENHANCED RISK ANALYTICS DATA
+// ============================================================
+
+// Model Performance Data - sensitivity, specificity, PPV, NPV
+export const modelPerformanceData: ModelPerformanceData = {
+  metrics: [
+    {
+      name: 'Detects High-Risk',
+      technicalName: 'Sensitivity',
+      value: 89,
+      benchmark: 85,
+      description: 'Correctly identifies patients who develop complications',
+    },
+    {
+      name: 'Confirms Low-Risk',
+      technicalName: 'Specificity',
+      value: 82,
+      benchmark: 80,
+      description: 'Correctly identifies patients who stay complication-free',
+    },
+    {
+      name: 'High-Risk Accuracy',
+      technicalName: 'PPV',
+      value: 76,
+      benchmark: 70,
+      description: 'When flagged high-risk, how often that\'s correct',
+    },
+    {
+      name: 'Low-Risk Accuracy',
+      technicalName: 'NPV',
+      value: 92,
+      benchmark: 90,
+      description: 'When flagged low-risk, how often that\'s correct',
+    },
+  ],
+  validationInfo: {
+    sampleSize: 1247,
+    validationPeriod: 'Jan 2023 - Dec 2024',
+    lastUpdated: '2025-01-15',
+  },
+};
+
+// Calibration Data - predicted vs actual outcomes (10 deciles)
+export const calibrationData: CalibrationData = {
+  deciles: [
+    { predictedRisk: 5, actualOutcomes: 4, patientCount: 124 },
+    { predictedRisk: 15, actualOutcomes: 13, patientCount: 118 },
+    { predictedRisk: 25, actualOutcomes: 23, patientCount: 132 },
+    { predictedRisk: 35, actualOutcomes: 32, patientCount: 145 },
+    { predictedRisk: 45, actualOutcomes: 47, patientCount: 139 },
+    { predictedRisk: 55, actualOutcomes: 52, patientCount: 128 },
+    { predictedRisk: 65, actualOutcomes: 68, patientCount: 115 },
+    { predictedRisk: 75, actualOutcomes: 73, patientCount: 108 },
+    { predictedRisk: 85, actualOutcomes: 88, patientCount: 96 },
+    { predictedRisk: 95, actualOutcomes: 93, patientCount: 82 },
+  ],
+  interpretation: 'Predictions are well-calibrated. Actual outcomes closely match predicted risk levels across all deciles.',
+};
+
+// Risk Distribution Histogram Data
+export const riskDistributionHistogramData: RiskDistributionData = {
+  histogram: [
+    { scoreRange: '0-10', scoreMidpoint: 5, count: 28, percentage: 4 },
+    { scoreRange: '10-20', scoreMidpoint: 15, count: 76, percentage: 11 },
+    { scoreRange: '20-30', scoreMidpoint: 25, count: 134, percentage: 19 },
+    { scoreRange: '30-40', scoreMidpoint: 35, count: 156, percentage: 22 },
+    { scoreRange: '40-50', scoreMidpoint: 45, count: 112, percentage: 16 },
+    { scoreRange: '50-60', scoreMidpoint: 55, count: 84, percentage: 12 },
+    { scoreRange: '60-70', scoreMidpoint: 65, count: 56, percentage: 8 },
+    { scoreRange: '70-80', scoreMidpoint: 75, count: 35, percentage: 5 },
+    { scoreRange: '80-90', scoreMidpoint: 85, count: 14, percentage: 2 },
+    { scoreRange: '90-100', scoreMidpoint: 95, count: 7, percentage: 1 },
+  ],
+  thresholds: { lowToMedium: 30, mediumToHigh: 60 },
+  statistics: { mean: 38.4, median: 35, standardDeviation: 18.2 },
+};
+
+// Outcome Tracking Data - 12 months
+export const outcomeTrackingData: OutcomeTrackingData = {
+  monthly: [
+    { month: 'Jan', predictedHighRisk: 12, actualComplications: 10, truePositives: 9 },
+    { month: 'Feb', predictedHighRisk: 14, actualComplications: 11, truePositives: 10 },
+    { month: 'Mar', predictedHighRisk: 11, actualComplications: 9, truePositives: 8 },
+    { month: 'Apr', predictedHighRisk: 15, actualComplications: 13, truePositives: 12 },
+    { month: 'May', predictedHighRisk: 13, actualComplications: 12, truePositives: 11 },
+    { month: 'Jun', predictedHighRisk: 16, actualComplications: 14, truePositives: 13 },
+    { month: 'Jul', predictedHighRisk: 14, actualComplications: 12, truePositives: 11 },
+    { month: 'Aug', predictedHighRisk: 18, actualComplications: 15, truePositives: 14 },
+    { month: 'Sep', predictedHighRisk: 15, actualComplications: 13, truePositives: 12 },
+    { month: 'Oct', predictedHighRisk: 17, actualComplications: 14, truePositives: 13 },
+    { month: 'Nov', predictedHighRisk: 19, actualComplications: 16, truePositives: 15 },
+    { month: 'Dec', predictedHighRisk: 16, actualComplications: 14, truePositives: 13 },
+  ],
+  aggregate: {
+    overallAccuracy: 87,
+    trend: 'stable',
+  },
+};
+
+// ============================================================
+// PATIENT CALLS DATA
+// ============================================================
+
+export const patientCalls: Record<string, PatientCall[]> = {
+  'p-001': [
+    {
+      id: 'call-001-1',
+      patientId: 'p-001',
+      date: hoursAgo(1),
+      duration: 14,
+      coordinator: 'Sarah Miller',
+      status: 'completed',
+      transcript: patientTranscripts['p-001'],
+      summary: 'Pre-evaluation call completed. Patient has significant cardiac history (heart attack 2021, 2 stents, EF 35%) and diabetic complications (neuropathy, retinopathy). 30 pack-year smoking history, quit 2021. Limited daytime support - wife works full-time.',
+    },
+  ],
+  'p-002': [
+    {
+      id: 'call-002-1',
+      patientId: 'p-002',
+      date: hoursAgo(135),
+      duration: 11,
+      coordinator: 'Jennifer Adams',
+      status: 'completed',
+      transcript: `Coordinator: Hello, is this Jane Doe?
+Patient: Yes, speaking.
+
+Coordinator: Hi Jane, I'm calling from the transplant clinic for your pre-evaluation. Is this a good time?
+Patient: Yes, go ahead.
+
+Coordinator: Can you confirm your date of birth?
+Patient: July 22nd, 1965.
+
+Coordinator: What caused your kidney disease?
+Patient: Polycystic kidney disease. It runs in my family.
+
+Coordinator: Are you on dialysis?
+Patient: Yes, peritoneal dialysis for about 2 years now.
+
+Coordinator: Any complications?
+Patient: No major issues. I do it at home and it's been going smoothly.
+
+Coordinator: Do you have any heart problems?
+Patient: No heart problems.
+
+Coordinator: Any diabetes?
+Patient: No diabetes either.
+
+Coordinator: Who will support you after surgery?
+Patient: My husband is very supportive. We have two adult children who live nearby too.
+
+Coordinator: How is your medication compliance?
+Patient: Excellent. I never miss my dialysis exchanges or medications.
+
+Coordinator: That's great. Thank you, Jane. Our team will be in touch soon.`,
+      summary: 'Pre-evaluation completed. PKD patient on home peritoneal dialysis for 2 years. No cardiac issues or diabetes. Excellent support system with husband and adult children nearby. Perfect compliance history.',
+    },
+  ],
+  'p-004': [
+    {
+      id: 'call-004-1',
+      patientId: 'p-004',
+      date: hoursAgo(410),
+      duration: 12,
+      coordinator: 'Sarah Miller',
+      status: 'completed',
+      transcript: patientTranscripts['p-004'],
+      summary: 'Pre-evaluation completed. Lupus nephritis patient on hemodialysis 18 months. No cardiac issues. Excellent support - lives with retired parents, sister is a nurse. Perfect medication compliance using pill organizer and phone reminders.',
+    },
+  ],
+  'p-008': [
+    {
+      id: 'call-008-1',
+      patientId: 'p-008',
+      date: hoursAgo(95),
+      duration: 0,
+      coordinator: 'Jennifer Adams',
+      status: 'scheduled',
+      summary: 'Pre-evaluation call scheduled for tomorrow at 10:00 AM.',
+    },
+  ],
+  'p-009': [
+    {
+      id: 'call-009-1',
+      patientId: 'p-009',
+      date: hoursAgo(2040),
+      duration: 10,
+      coordinator: 'Sarah Miller',
+      status: 'completed',
+      transcript: patientTranscripts['p-009'],
+      summary: 'Pre-evaluation completed. Ideal candidate - pre-emptive evaluation, no dialysis yet. IgA nephropathy. No diabetes or cardiac issues. Never smoked. Excellent support system with wife working from home. Perfect medication adherence.',
+    },
+  ],
+  'p-014': [
+    {
+      id: 'call-014-1',
+      patientId: 'p-014',
+      date: hoursAgo(710),
+      duration: 13,
+      coordinator: 'Jennifer Adams',
+      status: 'completed',
+      transcript: patientTranscripts['p-014'],
+      summary: 'Pre-evaluation completed. PKD patient on hemodialysis 2 years. No diabetes or cardiac issues. Shellfish allergy (anaphylaxis). Good support - lives with husband and teenagers. Excellent compliance, uses health tracking app.',
+    },
+  ],
+};
+
+export function getCallsByPatientId(patientId: string): PatientCall[] {
+  return patientCalls[patientId] || [];
 }

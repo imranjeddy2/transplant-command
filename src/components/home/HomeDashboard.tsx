@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { AlertCircle, Clock, Calendar, ArrowRight } from 'lucide-react';
+import { AlertCircle, Clock, Calendar, ArrowRight, Sparkles } from 'lucide-react';
 import { tasks, getAllPreEvaluations } from '@/data/mockData';
 import { useUser } from '@/context';
 import type { Task } from '@/types';
@@ -36,26 +36,30 @@ interface StatCardProps {
 
 function StatCard({ title, count, subtitle, icon: Icon, color, onClick }: StatCardProps) {
   const colorClasses = {
-    primary: 'bg-primary/10 text-primary',
-    blue: 'bg-blue-500/10 text-blue-500',
-    amber: 'bg-amber-500/10 text-amber-500',
+    primary: { bg: 'bg-primary/10', text: 'text-primary', gradient: 'from-primary/5 to-transparent' },
+    blue: { bg: 'bg-blue-500/10', text: 'text-blue-500', gradient: 'from-blue-500/5 to-transparent' },
+    amber: { bg: 'bg-amber-500/10', text: 'text-amber-500', gradient: 'from-amber-500/5 to-transparent' },
   };
+
+  const classes = colorClasses[color];
 
   return (
     <motion.button
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -2, transition: { duration: 0.2 } }}
       onClick={onClick}
-      className="bg-card rounded-xl border border-border p-6 text-left hover:border-primary/50 transition-colors w-full"
+      className="relative bg-card rounded-xl border border-border p-6 text-left hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 w-full overflow-hidden group"
     >
-      <div className="flex items-start justify-between">
+      <div className={`absolute inset-0 bg-gradient-to-br ${classes.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+      <div className="relative flex items-start justify-between">
         <div>
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-3xl font-semibold text-foreground mt-2">{count}</p>
+          <p className="text-3xl font-semibold text-foreground mt-2 tracking-tight">{count}</p>
           <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
         </div>
-        <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
-          <Icon className="h-6 w-6" />
+        <div className={`p-3 rounded-xl ${classes.bg} group-hover:scale-110 transition-transform duration-300`}>
+          <Icon className={`h-6 w-6 ${classes.text}`} />
         </div>
       </div>
     </motion.button>
@@ -112,14 +116,27 @@ export function HomeDashboard() {
   return (
     <div className="p-8">
       {/* Greeting */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-foreground">
-          {getGreeting()}, {user.firstName}
-        </h1>
-        <p className="text-muted-foreground mt-1">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8"
+      >
+        <div className="flex items-center gap-3 mb-2">
+          <h1 className="text-2xl font-semibold text-foreground">
+            {getGreeting()}, {user.firstName}
+          </h1>
+          <motion.div
+            initial={{ rotate: -20, scale: 0 }}
+            animate={{ rotate: 0, scale: 1 }}
+            transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+          >
+            <Sparkles className="h-5 w-5 text-primary" />
+          </motion.div>
+        </div>
+        <p className="text-muted-foreground">
           Here's what needs your attention today
         </p>
-      </div>
+      </motion.div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
