@@ -443,6 +443,37 @@ export const patients: Patient[] = [
       authorizationStatus: 'pending',
     },
   },
+  {
+    id: 'p-manpreet',
+    firstName: 'Manpreet',
+    lastName: 'Singh',
+    dateOfBirth: '1975-04-12',
+    mrn: 'MRN-2024-016',
+    phone: '(555) 600-0001',
+    status: 'evaluation_scheduled',
+    referralDate: daysAgo(3),
+    gfr: 19,
+    creatinine: 4.0,
+    bloodType: 'B+',
+    bmi: 25.2,
+    primaryDiagnosis: 'CKD Stage 5 - Hypertensive Nephropathy',
+    diabetes: false,
+    hypertension: true,
+    previousTransplants: 0,
+    onDialysis: true,
+    dialysisStartDate: '2023-09-01',
+    dialysisType: 'Hemodialysis',
+    referringProvider: {
+      name: 'Dr. Anika Patel',
+      organization: 'South Asian Nephrology Group',
+      phone: '(555) 600-0002',
+    },
+    insurance: {
+      carrier: 'United Healthcare',
+      policyNumber: 'UHC-999888777',
+      authorizationStatus: 'pending',
+    },
+  },
 ];
 
 // Mock Tasks (18 records)
