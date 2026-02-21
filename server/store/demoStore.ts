@@ -1,13 +1,16 @@
 // In-memory store for demo purposes
 // Data persists during server runtime but resets on restart
 
-import type { StoredCall, ExtractedCallData } from '../types.js';
+import type { StoredCall, ExtractedCallData, PatientState } from '../types.js';
 
 // Store calls by callId
 const calls: Map<string, StoredCall> = new Map();
 
 // Store call results by patientId for quick lookup
 const patientCallResults: Map<string, ExtractedCallData> = new Map();
+
+// Store patient state (status + risk) set after webhook calls
+const patientStates: Map<string, PatientState> = new Map();
 
 export function createCall(call: StoredCall): void {
   calls.set(call.callId, call);
@@ -62,20 +65,29 @@ export function getPatientCallResults(patientId: string): ExtractedCallData | un
   return patientCallResults.get(patientId);
 }
 
+export function setPatientState(state: PatientState): void {
+  patientStates.set(state.patientId, state);
+}
+
+export function getPatientState(patientId: string): PatientState | undefined {
+  return patientStates.get(patientId);
+}
+
 export function resetDemo(): void {
   calls.clear();
   patientCallResults.clear();
+  patientStates.clear();
   console.log('Demo data has been reset');
 }
 
 export function resetPatient(patientId: string): void {
-  // Remove calls for this patient
   for (const [callId, call] of calls.entries()) {
     if (call.patientId === patientId) {
       calls.delete(callId);
     }
   }
   patientCallResults.delete(patientId);
+  patientStates.delete(patientId);
   console.log(`Demo data reset for patient: ${patientId}`);
 }
 

@@ -30,8 +30,8 @@ import {
 import type { JourneyStep, JourneyStepStatus } from '@/types';
 import { PreEvalResultsTab } from './PreEvalResultsTab';
 import { CallsTab } from './CallsTab';
-import { getExtractedData, type ExtractedPatientData } from '@/services/callService';
-import type { PreEvaluationData } from '@/types';
+import { getExtractedData, getPatientState, clearPatientData, type ExtractedPatientData, type PatientStateResponse } from '@/services/callService';
+import type { PreEvaluationData, RiskAssessment, PatientStatus } from '@/types';
 
 type TabKey = 'journey' | 'tasks' | 'pre-eval' | 'calls' | 'insurance' | 'documents';
 
@@ -198,11 +198,30 @@ export function PatientProfile() {
   const mockPreEvaluation = getPreEvaluationByPatientId(patientId || '');
   const riskAssessment = getRiskAssessmentByPatientId(patientId || '');
 
-  // Fetch real extracted data from webhook calls (overrides mock pre-eval if available)
+  // Fetch real extracted data and patient state from webhook calls
   const [realExtracted, setRealExtracted] = useState<ExtractedPatientData | null>(null);
+  const [patientState, setPatientState] = useState<PatientStateResponse | null>(null);
+  const [clearing, setClearing] = useState(false);
+
+  const fetchServerState = (pid: string) => {
+    getExtractedData(pid).then(setRealExtracted);
+    getPatientState(pid).then(setPatientState);
+  };
+
   useEffect(() => {
-    getExtractedData(patientId || '').then(setRealExtracted);
+    fetchServerState(patientId || '');
   }, [patientId]);
+
+  const handleClear = async () => {
+    setClearing(true);
+    await clearPatientData(patientId || '');
+    setRealExtracted(null);
+    setPatientState(null);
+    setClearing(false);
+  };
+
+  // Status: use server state if available, otherwise mock
+  const displayStatus: PatientStatus = (patientState?.status as PatientStatus) ?? patient?.status;
 
   // Build preEvaluation: use real extracted data if available, otherwise mock
   const preEvaluation: PreEvaluationData | null = realExtracted
@@ -215,6 +234,26 @@ export function PatientProfile() {
         lifestyleInfo: realExtracted.lifestyleInfo,
       }
     : mockPreEvaluation;
+
+  // Build risk assessment from server state if available
+  const liveRiskAssessment: RiskAssessment | null = patientState?.riskAssessment
+    ? {
+        patientId: patientId || '',
+        calculatedLevel: patientState.riskAssessment.level,
+        totalScore: patientState.riskAssessment.totalScore,
+        confidenceScore: patientState.riskAssessment.confidenceScore,
+        factors: patientState.riskAssessment.factors.map((f, i) => ({
+          id: `rf-${i}`,
+          category: f.category as RiskAssessment['factors'][0]['category'],
+          name: f.name,
+          value: f.value,
+          impact: f.impact,
+          points: f.points,
+          description: f.description,
+        })),
+        createdAt: new Date().toISOString(),
+      }
+    : null;
 
   if (!patient) {
     return (
@@ -252,8 +291,32 @@ export function PatientProfile() {
             </div>
           </div>
 
-          {/* Patient Navigation */}
-          <div className="flex items-center gap-2">
+          {/* Status badge + Clear button + Navigation */}
+          <div className="flex items-center gap-3">
+            {/* Status badge */}
+            <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+              displayStatus === 'under_review' ? 'bg-primary/10 text-primary' :
+              displayStatus === 'referral_received' ? 'bg-blue-50 text-blue-600' :
+              displayStatus === 'evaluation_scheduled' ? 'bg-amber-50 text-amber-600' :
+              displayStatus === 'evaluation_complete' ? 'bg-green-50 text-green-600' :
+              displayStatus === 'waitlisted' ? 'bg-indigo-50 text-indigo-600' :
+              displayStatus === 'transplanted' ? 'bg-emerald-50 text-emerald-600' :
+              'bg-gray-100 text-gray-500'
+            }`}>
+              {displayStatus.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+            </span>
+
+            {/* Clear button — shown when server state exists */}
+            {patientState && (
+              <button
+                onClick={handleClear}
+                disabled={clearing}
+                className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {clearing ? 'Clearing...' : 'Clear Call Data'}
+              </button>
+            )}
+
             <button
               onClick={() => prevPatient && navigate(`/patients/${prevPatient.id}`)}
               disabled={!prevPatient}
@@ -503,7 +566,7 @@ export function PatientProfile() {
           {activeTab === 'pre-eval' && (
             <PreEvalResultsTab
               preEvaluation={preEvaluation}
-              riskAssessment={riskAssessment}
+              riskAssessment={liveRiskAssessment ?? riskAssessment}
               patientName={`${patient.firstName} ${patient.lastName}`}
             />
           )}

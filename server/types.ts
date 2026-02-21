@@ -78,6 +78,32 @@ export interface ExtractedField {
   confidence: 'high' | 'medium' | 'low';
 }
 
+export interface RiskFactorData {
+  category: string;
+  name: string;
+  value: string;
+  impact: 'high' | 'medium' | 'low';
+  points: number;
+  description: string;
+}
+
+export interface PatientRiskAssessment {
+  level: 'HIGH' | 'MEDIUM' | 'LOW';
+  totalScore: number;
+  confidenceScore: number;
+  factors: RiskFactorData[];
+}
+
+export interface PatientState {
+  patientId: string;
+  status: string;
+  riskAssessment?: PatientRiskAssessment;
+}
+
+export interface FullExtractionResult extends ExtractedCallData {
+  risk?: PatientRiskAssessment;
+}
+
 export interface StoredCall {
   callId: string;
   patientId: string;

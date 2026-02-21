@@ -2,7 +2,7 @@
 
 import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { replacePatientCall } from '../store/demoStore.js';
+import { replacePatientCall, setPatientState } from '../store/demoStore.js';
 import { extractDataFromTranscript } from '../services/extractionService.js';
 import type { StoredCall } from '../types.js';
 
@@ -64,6 +64,8 @@ router.post('/vapi', async (req: Request, res: Response) => {
     const startedAt: string | undefined = call.startedAt;
     const endedAt: string | undefined = call.endedAt;
 
+    const extracted = await extractDataFromTranscript(rawTranscript);
+
     const storedCall: StoredCall = {
       callId: vapiCallId,
       patientId,
@@ -76,10 +78,11 @@ router.post('/vapi', async (req: Request, res: Response) => {
       summary,
       startedAt,
       endedAt,
-      extractedData: await extractDataFromTranscript(rawTranscript),
+      extractedData: extracted,
     };
 
     replacePatientCall(storedCall);
+    setPatientState({ patientId, status: 'under_review', riskAssessment: extracted.risk });
 
     console.log(`[Vapi webhook] Replaced call for patient ${patientId} (call ${vapiCallId})`);
     res.json({ received: true });
@@ -116,6 +119,8 @@ router.post('/retell', async (req: Request, res: Response) => {
     const startedAt = call.start_timestamp ? new Date(call.start_timestamp).toISOString() : undefined;
     const endedAt = call.end_timestamp ? new Date(call.end_timestamp).toISOString() : undefined;
 
+    const extracted = await extractDataFromTranscript(rawTranscript);
+
     const storedCall: StoredCall = {
       callId: retellCallId,
       patientId,
@@ -128,10 +133,11 @@ router.post('/retell', async (req: Request, res: Response) => {
       endedAt,
       transcript,
       summary,
-      extractedData: await extractDataFromTranscript(rawTranscript),
+      extractedData: extracted,
     };
 
     replacePatientCall(storedCall);
+    setPatientState({ patientId, status: 'under_review', riskAssessment: extracted.risk });
 
     console.log(`[Retell webhook] Replaced call for patient ${patientId} (call ${retellCallId})`);
     res.json({ received: true });

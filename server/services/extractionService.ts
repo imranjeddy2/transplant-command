@@ -1,7 +1,7 @@
-// Service to extract structured data from call transcripts using Claude
+// Service to extract structured data and risk assessment from call transcripts using Claude
 
 import Anthropic from '@anthropic-ai/sdk';
-import type { ExtractedCallData } from '../types.js';
+import type { FullExtractionResult } from '../types.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -21,20 +21,40 @@ Extract the following information from the call transcript below. Return ONLY va
     "transportation": { "value": "...", "confidence": "high|medium|low" },
     "livingSituation": { "value": "...", "confidence": "high|medium|low" },
     "complianceHistory": { "value": "...", "confidence": "high|medium|low" }
+  },
+  "risk": {
+    "level": "HIGH|MEDIUM|LOW",
+    "totalScore": <number 0-100>,
+    "confidenceScore": <number 0-100>,
+    "factors": [
+      {
+        "category": "<one of: cardiac|diabetes|dialysis|sensitization|cancer|lifestyle|compliance|functional>",
+        "name": "<short factor name>",
+        "value": "<observed value from transcript>",
+        "impact": "<high|medium|low>",
+        "points": <number 5-25>,
+        "description": "<one sentence clinical description>"
+      }
+    ]
   }
 }
 
-Rules:
+Rules for extraction fields:
 - If the patient didn't mention something, set value to "Not mentioned" and confidence to "low"
-- confidence is "high" if stated clearly, "medium" if implied, "low" if not mentioned or unclear
-- Be concise but complete in the value fields
-- Do not add any fields beyond what is specified
+- confidence is "high" if stated clearly, "medium" if implied, "low" if unclear or not mentioned
+- Be concise but complete
+
+Rules for risk assessment:
+- LOW: 0-30 total score — patient appears to be a reasonable transplant candidate
+- MEDIUM: 31-60 — some concerns requiring further evaluation
+- HIGH: 61-100 — significant risk factors identified
+- Include 2-5 factors based on what is mentioned in the transcript
+- Only use categories from: cardiac, diabetes, dialysis, sensitization, cancer, lifestyle, compliance, functional
 
 Transcript:
 `;
 
-// Fallback data used when API key is missing or extraction fails
-const FALLBACK_DATA: ExtractedCallData = {
+const FALLBACK: FullExtractionResult = {
   medicalHistory: {
     previousSurgeries: { value: 'Not extracted', confidence: 'low' },
     currentMedications: { value: 'Not extracted', confidence: 'low' },
@@ -49,37 +69,32 @@ const FALLBACK_DATA: ExtractedCallData = {
   },
 };
 
-export async function extractDataFromTranscript(transcript: string): Promise<ExtractedCallData> {
+export async function extractDataFromTranscript(transcript: string): Promise<FullExtractionResult> {
   if (!process.env.ANTHROPIC_API_KEY) {
     console.warn('[Extraction] ANTHROPIC_API_KEY not set — skipping LLM extraction');
-    return FALLBACK_DATA;
+    return FALLBACK;
   }
 
   if (!transcript || transcript.trim().length === 0) {
     console.warn('[Extraction] Empty transcript — skipping LLM extraction');
-    return FALLBACK_DATA;
+    return FALLBACK;
   }
 
   try {
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      messages: [
-        {
-          role: 'user',
-          content: EXTRACTION_PROMPT + transcript,
-        },
-      ],
+      max_tokens: 1500,
+      messages: [{ role: 'user', content: EXTRACTION_PROMPT + transcript }],
     });
 
     const text = response.content[0].type === 'text' ? response.content[0].text : '';
-    const extracted = JSON.parse(text) as ExtractedCallData;
+    const extracted = JSON.parse(text) as FullExtractionResult;
 
-    console.log('[Extraction] Successfully extracted data from transcript');
+    console.log(`[Extraction] Success — risk level: ${extracted.risk?.level ?? 'none'}`);
     return extracted;
   } catch (error) {
-    console.error('[Extraction] Failed to extract data:', error);
-    return FALLBACK_DATA;
+    console.error('[Extraction] Failed:', error);
+    return FALLBACK;
   }
 }
 

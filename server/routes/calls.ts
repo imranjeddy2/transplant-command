@@ -4,7 +4,7 @@ import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { initiateOutboundCall, getCallStatus, mapVapiStatus } from '../services/vapiService.js';
 import { extractDataFromTranscript, calculateCallDuration } from '../services/extractionService.js';
-import { createCall, getCall, updateCall, resetDemo, resetPatient, getAllCalls, getAllCallsByPatientId, getPatientCallResults } from '../store/demoStore.js';
+import { createCall, getCall, updateCall, resetDemo, resetPatient, getAllCalls, getAllCallsByPatientId, getPatientCallResults, getPatientState } from '../store/demoStore.js';
 import type { InitiateCallRequest, StoredCall, CallStatus } from '../types.js';
 
 const router = Router();
@@ -74,6 +74,17 @@ router.get('/patient/:patientId', (req: Request, res: Response) => {
   const { patientId } = req.params;
   const patientCalls = getAllCallsByPatientId(patientId);
   res.json(patientCalls);
+});
+
+// GET /api/calls/patient/:patientId/state - Get patient state (status + risk) set after a call
+router.get('/patient/:patientId/state', (req: Request, res: Response) => {
+  const { patientId } = req.params;
+  const state = getPatientState(patientId);
+  if (!state) {
+    res.status(404).json({ error: 'No state found' });
+    return;
+  }
+  res.json(state);
 });
 
 // GET /api/calls/patient/:patientId/extracted - Get latest extracted data for a patient

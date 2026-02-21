@@ -89,6 +89,40 @@ export async function resetDemo(): Promise<void> {
   }
 }
 
+export interface PatientRiskFactor {
+  category: string;
+  name: string;
+  value: string;
+  impact: 'high' | 'medium' | 'low';
+  points: number;
+  description: string;
+}
+
+export interface PatientStateResponse {
+  patientId: string;
+  status: string;
+  riskAssessment?: {
+    level: 'HIGH' | 'MEDIUM' | 'LOW';
+    totalScore: number;
+    confidenceScore: number;
+    factors: PatientRiskFactor[];
+  };
+}
+
+export async function getPatientState(patientId: string): Promise<PatientStateResponse | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/calls/patient/${patientId}/state`);
+    if (!response.ok) return null;
+    return response.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function clearPatientData(patientId: string): Promise<void> {
+  await fetch(`${API_BASE_URL}/demo/reset/${patientId}`, { method: 'POST' });
+}
+
 export async function resetPatientDemo(patientId: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/demo/reset/${patientId}`, {
     method: 'POST',
