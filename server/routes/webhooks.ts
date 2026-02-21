@@ -99,25 +99,38 @@ router.post('/vapi', async (req: Request, res: Response) => {
 });
 
 // POST /api/webhooks/retell
-// Retell sends a POST for each call event; we only process call_ended
+// Handles call_ended and call_analyzed events from Retell
 // Always overwrites the previous call for p-manpreet-retell
 router.post('/retell', async (req: Request, res: Response) => {
   if (!verifyRetellSecret(req, res)) return;
   try {
     const payload = req.body;
 
-    if (payload?.event !== 'call_ended') {
+    // Log incoming event for debugging
+    console.log('[Retell webhook] event:', payload?.event, 'keys:', Object.keys(payload?.call || {}));
+
+    // Accept both call_ended and call_analyzed (transcript ready)
+    const acceptedEvents = ['call_ended', 'call_analyzed'];
+    if (!acceptedEvents.includes(payload?.event)) {
       res.json({ received: true });
       return;
     }
 
-    const { call } = payload;
+    const call = payload.call || payload; // some versions wrap in call, some don't
 
     const patientId: string = call?.metadata?.patientId || 'p-manpreet-retell';
     const patientName: string = call?.metadata?.patientName || 'Manpreet Retell';
 
     const retellCallId: string = call.call_id || uuidv4();
-    const rawTranscript: string = call.transcript || '';
+
+    // Retell may put transcript at different paths depending on version
+    const rawTranscript: string =
+      call.transcript ||
+      call.transcript_with_tool_calls ||
+      '';
+
+    console.log(`[Retell webhook] transcript length: ${rawTranscript.length}, callId: ${retellCallId}`);
+
     const transcript = normalizeTranscript(rawTranscript);
     const summary: string = call.call_analysis?.call_summary || '';
 
@@ -145,7 +158,7 @@ router.post('/retell', async (req: Request, res: Response) => {
     replacePatientCall(storedCall);
     setPatientState({ patientId, status: 'under_review', riskAssessment: extracted.risk });
 
-    console.log(`[Retell webhook] Replaced call for patient ${patientId} (call ${retellCallId})`);
+    console.log(`[Retell webhook] Processed ${payload.event} for patient ${patientId} (call ${retellCallId})`);
     res.json({ received: true });
   } catch (error) {
     console.error('[Retell webhook] Error processing payload:', error);
