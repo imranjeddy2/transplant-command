@@ -33,14 +33,9 @@ router.post('/vapi', async (req: Request, res: Response) => {
     const { message } = payload;
     const call = message.call;
 
-    const patientId: string | undefined = call?.metadata?.patientId;
-    const patientName: string = call?.metadata?.patientName || 'Unknown Patient';
-
-    if (!patientId) {
-      console.warn('[Vapi webhook] Received end-of-call-report without patientId in metadata — ignoring');
-      res.json({ received: true });
-      return;
-    }
+    // Default to Manpreet if no patientId in metadata (hardcoded for now)
+    const patientId: string = call?.metadata?.patientId || 'p-manpreet';
+    const patientName: string = call?.metadata?.patientName || 'Manpreet Singh';
 
     const vapiCallId: string = call.id;
     const rawTranscript: string = message.transcript || '';
