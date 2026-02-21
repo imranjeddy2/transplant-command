@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Filter, Search, Users } from 'lucide-react';
 import { patients, getRiskAssessmentByPatientId } from '@/data/mockData';
-import type { PatientStatus } from '@/types';
+import type { PatientStatus, RiskLevel } from '@/types';
 import { RiskBadge } from '@/components/risk';
+import { getPatientState, type PatientStateResponse } from '@/services/callService';
 
 const statusConfig: Record<PatientStatus, { label: string; color: string; bgColor: string }> = {
   referral_received: {
@@ -50,9 +51,28 @@ export function PatientList() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<FilterOption>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [serverStates, setServerStates] = useState<Record<string, PatientStateResponse>>({});
+
+  useEffect(() => {
+    Promise.all(
+      patients.map((p) =>
+        getPatientState(p.id).then((state) => (state ? { id: p.id, state } : null))
+      )
+    ).then((results) => {
+      const stateMap: Record<string, PatientStateResponse> = {};
+      results.forEach((r) => {
+        if (r) stateMap[r.id] = r.state;
+      });
+      setServerStates(stateMap);
+    });
+  }, []);
 
   const filteredPatients = patients
-    .filter((p) => (filter === 'all' ? true : p.status === filter))
+    .filter((p) => {
+      if (filter === 'all') return true;
+      const effectiveStatus = (serverStates[p.id]?.status as PatientStatus) ?? p.status;
+      return effectiveStatus === filter;
+    })
     .filter((p) => {
       if (!searchQuery) return true;
       const query = searchQuery.toLowerCase();
@@ -146,9 +166,12 @@ export function PatientList() {
           </thead>
           <tbody>
             {filteredPatients.map((patient, index) => {
-              const status = statusConfig[patient.status];
+              const serverState = serverStates[patient.id];
+              const effectiveStatus = (serverState?.status as PatientStatus) ?? patient.status;
+              const status = statusConfig[effectiveStatus] ?? statusConfig[patient.status];
               const riskAssessment = getRiskAssessmentByPatientId(patient.id);
-              const effectiveRisk = riskAssessment?.overrideLevel || riskAssessment?.calculatedLevel;
+              const serverRiskLevel = serverState?.riskAssessment?.level as RiskLevel | undefined;
+              const effectiveRisk = serverRiskLevel || riskAssessment?.overrideLevel || riskAssessment?.calculatedLevel;
 
               return (
                 <motion.tr
