@@ -112,6 +112,31 @@ export interface PatientCallRecord {
   extractedData?: ExtractedCallData | null;
 }
 
+export interface ExtractedPatientData {
+  medicalHistory: {
+    previousSurgeries: ExtractedField;
+    currentMedications: ExtractedField;
+    allergies: ExtractedField;
+    symptoms: ExtractedField;
+  };
+  lifestyleInfo: {
+    supportSystem: ExtractedField;
+    transportation: ExtractedField;
+    livingSituation: ExtractedField;
+    complianceHistory: ExtractedField;
+  };
+}
+
+export async function getExtractedData(patientId: string): Promise<ExtractedPatientData | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/calls/patient/${patientId}/extracted`);
+    if (!response.ok) return null;
+    return response.json();
+  } catch {
+    return null;
+  }
+}
+
 export async function getPatientCalls(patientId: string): Promise<PatientCallRecord[]> {
   try {
     const response = await fetch(`${API_BASE_URL}/calls/patient/${patientId}`);

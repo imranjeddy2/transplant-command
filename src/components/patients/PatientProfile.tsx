@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -30,6 +30,8 @@ import {
 import type { JourneyStep, JourneyStepStatus } from '@/types';
 import { PreEvalResultsTab } from './PreEvalResultsTab';
 import { CallsTab } from './CallsTab';
+import { getExtractedData, type ExtractedPatientData } from '@/services/callService';
+import type { PreEvaluationData } from '@/types';
 
 type TabKey = 'journey' | 'tasks' | 'pre-eval' | 'calls' | 'insurance' | 'documents';
 
@@ -193,8 +195,26 @@ export function PatientProfile() {
 
   // Get patient-specific journey data
   const journey = getJourneyByPatientId(patientId || '');
-  const preEvaluation = getPreEvaluationByPatientId(patientId || '');
+  const mockPreEvaluation = getPreEvaluationByPatientId(patientId || '');
   const riskAssessment = getRiskAssessmentByPatientId(patientId || '');
+
+  // Fetch real extracted data from webhook calls (overrides mock pre-eval if available)
+  const [realExtracted, setRealExtracted] = useState<ExtractedPatientData | null>(null);
+  useEffect(() => {
+    getExtractedData(patientId || '').then(setRealExtracted);
+  }, [patientId]);
+
+  // Build preEvaluation: use real extracted data if available, otherwise mock
+  const preEvaluation: PreEvaluationData | null = realExtracted
+    ? {
+        id: `webhook-${patientId}`,
+        patientId: patientId || '',
+        status: 'completed',
+        completedAt: new Date().toISOString(),
+        medicalHistory: realExtracted.medicalHistory,
+        lifestyleInfo: realExtracted.lifestyleInfo,
+      }
+    : mockPreEvaluation;
 
   if (!patient) {
     return (
