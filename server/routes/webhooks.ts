@@ -8,20 +8,26 @@ import type { StoredCall } from '../types.js';
 
 const router = Router();
 
-// Verify the shared webhook secret sent by Vapi/Retell
-function verifySecret(req: Request, res: Response): boolean {
+// Verify secret for Vapi (sent as x-vapi-secret header)
+function verifyVapiSecret(req: Request, res: Response): boolean {
   const secret = process.env.WEBHOOK_SECRET;
-  if (!secret) return true; // no secret configured, allow all (dev mode)
-
-  // Vapi sends it as x-vapi-secret header; Retell via query param ?secret=
-  const incoming =
-    req.headers['x-vapi-secret'] ||
-    req.headers['x-retell-signature'] ||
-    req.headers['x-webhook-secret'] ||
-    req.query['secret'];
-
+  if (!secret) return true;
+  const incoming = req.headers['x-vapi-secret'] || req.headers['x-webhook-secret'];
   if (incoming !== secret) {
-    console.warn('[Webhook] Rejected request — invalid or missing secret');
+    console.warn('[Webhook] Vapi: rejected request — invalid or missing secret');
+    res.status(401).json({ error: 'Unauthorized' });
+    return false;
+  }
+  return true;
+}
+
+// Verify secret for Retell (sent as ?secret= query param)
+function verifyRetellSecret(req: Request, res: Response): boolean {
+  const secret = process.env.WEBHOOK_SECRET;
+  if (!secret) return true;
+  const incoming = req.query['secret'];
+  if (incoming !== secret) {
+    console.warn('[Webhook] Retell: rejected request — invalid or missing secret');
     res.status(401).json({ error: 'Unauthorized' });
     return false;
   }
@@ -41,7 +47,7 @@ function normalizeTranscript(transcript: string): string {
 // Vapi sends a POST for each call event; we only process end-of-call-report
 // Always overwrites the previous call for p-manpreet-vapi
 router.post('/vapi', async (req: Request, res: Response) => {
-  if (!verifySecret(req, res)) return;
+  if (!verifyVapiSecret(req, res)) return;
   try {
     const payload = req.body;
     const messageType = payload?.message?.type;
@@ -96,7 +102,7 @@ router.post('/vapi', async (req: Request, res: Response) => {
 // Retell sends a POST for each call event; we only process call_ended
 // Always overwrites the previous call for p-manpreet-retell
 router.post('/retell', async (req: Request, res: Response) => {
-  if (!verifySecret(req, res)) return;
+  if (!verifyRetellSecret(req, res)) return;
   try {
     const payload = req.body;
 
