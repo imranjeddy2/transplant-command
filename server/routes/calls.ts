@@ -4,7 +4,7 @@ import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { initiateOutboundCall, getCallStatus, mapVapiStatus } from '../services/vapiService.js';
 import { extractDataFromTranscript, calculateCallDuration } from '../services/extractionService.js';
-import { createCall, getCall, updateCall, resetDemo, resetPatient, getAllCalls } from '../store/demoStore.js';
+import { createCall, getCall, updateCall, resetDemo, resetPatient, getAllCalls, getAllCallsByPatientId } from '../store/demoStore.js';
 import type { InitiateCallRequest, StoredCall, CallStatus } from '../types.js';
 
 const router = Router();
@@ -67,6 +67,13 @@ router.post('/initiate', async (req: Request, res: Response) => {
       message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
+});
+
+// GET /api/calls/patient/:patientId - Get all completed calls for a patient
+router.get('/patient/:patientId', (req: Request, res: Response) => {
+  const { patientId } = req.params;
+  const patientCalls = getAllCallsByPatientId(patientId);
+  res.json(patientCalls);
 });
 
 // GET /api/calls/:callId/status - Get call status

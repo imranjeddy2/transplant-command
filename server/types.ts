@@ -89,6 +89,7 @@ export interface StoredCall {
   startedAt?: string;
   endedAt?: string;
   transcript?: string;
+  summary?: string;
   extractedData?: ExtractedCallData;
   error?: string;
 }

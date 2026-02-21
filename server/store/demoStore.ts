@@ -41,6 +41,10 @@ export function getCallByPatientId(patientId: string): StoredCall | undefined {
   return undefined;
 }
 
+export function getAllCallsByPatientId(patientId: string): StoredCall[] {
+  return Array.from(calls.values()).filter(call => call.patientId === patientId);
+}
+
 export function getPatientCallResults(patientId: string): ExtractedCallData | undefined {
   return patientCallResults.get(patientId);
 }

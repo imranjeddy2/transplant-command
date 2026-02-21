@@ -2,8 +2,10 @@
 
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import { config } from 'dotenv';
 import callsRouter from './routes/calls.js';
+import webhooksRouter from './routes/webhooks.js';
 
 // Load environment variables
 config();
@@ -13,7 +15,9 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: process.env.NODE_ENV === 'production'
+    ? (process.env.FRONTEND_URL || true)   // same-origin in prod; true = allow all (webhooks)
+    : (process.env.FRONTEND_URL || 'http://localhost:5173'),
   credentials: true,
 }));
 app.use(express.json());
@@ -26,6 +30,7 @@ app.use((req, _res, next) => {
 
 // Routes
 app.use('/api/calls', callsRouter);
+app.use('/api/webhooks', webhooksRouter);
 
 // Demo reset routes (mounted at root level for convenience)
 app.post('/api/demo/reset', (_req, res) => {
@@ -49,6 +54,16 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+// Serve React frontend in production
+if (process.env.NODE_ENV === 'production') {
+  const distPath = path.join(process.cwd(), 'dist');
+  app.use(express.static(distPath));
+  // For any non-API route, serve the React app (client-side routing)
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
+
 // Error handling
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error('Server error:', err);
@@ -62,6 +77,9 @@ app.listen(PORT, () => {
   console.log(`\nEndpoints:`);
   console.log(`  POST /api/calls/initiate - Initiate a call`);
   console.log(`  GET  /api/calls/:id/status - Get call status`);
+  console.log(`  GET  /api/calls/patient/:patientId - Get all calls for a patient`);
+  console.log(`  POST /api/webhooks/vapi - Vapi end-of-call webhook`);
+  console.log(`  POST /api/webhooks/retell - Retell end-of-call webhook`);
   console.log(`  POST /api/demo/reset - Reset demo data`);
   console.log(`  GET  /api/health - Health check`);
 

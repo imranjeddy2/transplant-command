@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Phone, Clock, User, ChevronDown, ChevronUp, Calendar, FileText } from 'lucide-react';
 import type { PatientCall } from '@/types';
 import { getCallsByPatientId } from '@/data/mockData';
+import { getPatientCalls, type PatientCallRecord } from '@/services/callService';
 
 interface CallsTabProps {
   patientId: string;
@@ -180,8 +181,40 @@ function CallCard({ call }: { call: PatientCall }) {
   );
 }
 
+function recordToPatientCall(r: PatientCallRecord): PatientCall {
+  const durationMs =
+    r.startedAt && r.endedAt
+      ? new Date(r.endedAt).getTime() - new Date(r.startedAt).getTime()
+      : 0;
+  return {
+    id: r.callId,
+    patientId: r.patientId,
+    date: r.startedAt || r.createdAt,
+    duration: Math.round(durationMs / 60000),
+    coordinator: 'Robin (AI)',
+    status:
+      r.status === 'ended'
+        ? 'completed'
+        : r.status === 'failed'
+        ? 'missed'
+        : 'scheduled',
+    transcript: r.transcript,
+    summary: r.summary,
+  };
+}
+
 export function CallsTab({ patientId, patientName }: CallsTabProps) {
-  const calls = getCallsByPatientId(patientId);
+  const mockCalls = getCallsByPatientId(patientId);
+  const [realCalls, setRealCalls] = useState<PatientCall[]>([]);
+
+  useEffect(() => {
+    getPatientCalls(patientId).then(records => {
+      setRealCalls(records.map(recordToPatientCall));
+    });
+  }, [patientId]);
+
+  // Show real (webhook) calls when available, fall back to mock data
+  const calls = realCalls.length > 0 ? realCalls : mockCalls;
 
   if (calls.length === 0) {
     return (

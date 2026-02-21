@@ -1,6 +1,8 @@
 // Frontend service for call API
 
-const API_BASE_URL = 'http://localhost:3001/api';
+// In production the frontend is served by the same Express server,
+// so we use a relative path. In dev, point to the local backend.
+const API_BASE_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3001/api';
 
 export type CallStatus = 'initiating' | 'ringing' | 'in_progress' | 'ended' | 'failed';
 
@@ -94,6 +96,29 @@ export async function resetPatientDemo(patientId: string): Promise<void> {
 
   if (!response.ok) {
     throw new Error('Failed to reset patient demo');
+  }
+}
+
+export interface PatientCallRecord {
+  callId: string;
+  patientId: string;
+  patientName: string;
+  status: CallStatus;
+  createdAt: string;
+  startedAt?: string;
+  endedAt?: string;
+  transcript?: string;
+  summary?: string;
+  extractedData?: ExtractedCallData | null;
+}
+
+export async function getPatientCalls(patientId: string): Promise<PatientCallRecord[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/calls/patient/${patientId}`);
+    if (!response.ok) return [];
+    return response.json();
+  } catch {
+    return [];
   }
 }
 
