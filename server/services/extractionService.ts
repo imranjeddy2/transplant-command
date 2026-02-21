@@ -1,59 +1,91 @@
-// Service to extract structured data from Vapi call transcript
-// For demo purposes, this returns mock data regardless of transcript content
+// Service to extract structured data from call transcripts using Claude
 
-import type { ExtractedCallData, VapiCallResponse } from '../types.js';
+import Anthropic from '@anthropic-ai/sdk';
+import type { ExtractedCallData } from '../types.js';
 
-// Demo mock data - realistic pre-evaluation responses
-const DEMO_EXTRACTED_DATA: ExtractedCallData = {
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+const EXTRACTION_PROMPT = `You are a clinical data extraction assistant for a kidney transplant program.
+
+Extract the following information from the call transcript below. Return ONLY valid JSON matching this exact structure — no markdown, no explanation:
+
+{
+  "medicalHistory": {
+    "previousSurgeries": { "value": "...", "confidence": "high|medium|low" },
+    "currentMedications": { "value": "...", "confidence": "high|medium|low" },
+    "allergies": { "value": "...", "confidence": "high|medium|low" },
+    "symptoms": { "value": "...", "confidence": "high|medium|low" }
+  },
+  "lifestyleInfo": {
+    "supportSystem": { "value": "...", "confidence": "high|medium|low" },
+    "transportation": { "value": "...", "confidence": "high|medium|low" },
+    "livingSituation": { "value": "...", "confidence": "high|medium|low" },
+    "complianceHistory": { "value": "...", "confidence": "high|medium|low" }
+  }
+}
+
+Rules:
+- If the patient didn't mention something, set value to "Not mentioned" and confidence to "low"
+- confidence is "high" if stated clearly, "medium" if implied, "low" if not mentioned or unclear
+- Be concise but complete in the value fields
+- Do not add any fields beyond what is specified
+
+Transcript:
+`;
+
+// Fallback data used when API key is missing or extraction fails
+const FALLBACK_DATA: ExtractedCallData = {
   medicalHistory: {
-    previousSurgeries: {
-      value: 'Appendectomy in 2018, minor knee arthroscopy in 2020',
-      confidence: 'high',
-    },
-    currentMedications: {
-      value: 'Lisinopril 10mg daily for blood pressure, Metformin 500mg twice daily for diabetes management',
-      confidence: 'high',
-    },
-    allergies: {
-      value: 'Penicillin (causes rash), no known food allergies',
-      confidence: 'high',
-    },
-    symptoms: {
-      value: 'Occasional fatigue, some swelling in ankles by end of day, mild shortness of breath with exertion',
-      confidence: 'medium',
-    },
+    previousSurgeries: { value: 'Not extracted', confidence: 'low' },
+    currentMedications: { value: 'Not extracted', confidence: 'low' },
+    allergies: { value: 'Not extracted', confidence: 'low' },
+    symptoms: { value: 'Not extracted', confidence: 'low' },
   },
   lifestyleInfo: {
-    supportSystem: {
-      value: 'Lives with spouse who works from home. Adult daughter lives 15 minutes away and is available for appointments',
-      confidence: 'high',
-    },
-    transportation: {
-      value: 'Has reliable personal vehicle. Spouse can drive if needed. Daughter also available as backup',
-      confidence: 'high',
-    },
-    livingSituation: {
-      value: 'Single-story home with 2 bedrooms, accessible bathroom. No stairs required for daily activities',
-      confidence: 'high',
-    },
-    complianceHistory: {
-      value: 'Reports good medication adherence using pill organizer. Attends all scheduled appointments. Uses phone reminders',
-      confidence: 'medium',
-    },
+    supportSystem: { value: 'Not extracted', confidence: 'low' },
+    transportation: { value: 'Not extracted', confidence: 'low' },
+    livingSituation: { value: 'Not extracted', confidence: 'low' },
+    complianceHistory: { value: 'Not extracted', confidence: 'low' },
   },
 };
 
-export function extractDataFromTranscript(_callResponse: VapiCallResponse): ExtractedCallData {
-  // For demo: always return the same polished mock data
-  // In production, this would parse the actual transcript
-  return DEMO_EXTRACTED_DATA;
+export async function extractDataFromTranscript(transcript: string): Promise<ExtractedCallData> {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.warn('[Extraction] ANTHROPIC_API_KEY not set — skipping LLM extraction');
+    return FALLBACK_DATA;
+  }
+
+  if (!transcript || transcript.trim().length === 0) {
+    console.warn('[Extraction] Empty transcript — skipping LLM extraction');
+    return FALLBACK_DATA;
+  }
+
+  try {
+    const response = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'user',
+          content: EXTRACTION_PROMPT + transcript,
+        },
+      ],
+    });
+
+    const text = response.content[0].type === 'text' ? response.content[0].text : '';
+    const extracted = JSON.parse(text) as ExtractedCallData;
+
+    console.log('[Extraction] Successfully extracted data from transcript');
+    return extracted;
+  } catch (error) {
+    console.error('[Extraction] Failed to extract data:', error);
+    return FALLBACK_DATA;
+  }
 }
 
 export function calculateCallDuration(startedAt?: string, endedAt?: string): number {
   if (!startedAt || !endedAt) return 0;
-
   const start = new Date(startedAt).getTime();
   const end = new Date(endedAt).getTime();
-
-  return Math.round((end - start) / 1000 / 60); // Duration in minutes
+  return Math.round((end - start) / 1000 / 60);
 }

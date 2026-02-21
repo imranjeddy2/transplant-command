@@ -4,7 +4,7 @@ import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { replacePatientCall } from '../store/demoStore.js';
 import { extractDataFromTranscript } from '../services/extractionService.js';
-import type { StoredCall, VapiCallResponse } from '../types.js';
+import type { StoredCall } from '../types.js';
 
 const router = Router();
 
@@ -55,7 +55,7 @@ router.post('/vapi', async (req: Request, res: Response) => {
       summary,
       startedAt,
       endedAt,
-      extractedData: extractDataFromTranscript({ ...call, transcript: rawTranscript } as VapiCallResponse),
+      extractedData: await extractDataFromTranscript(rawTranscript),
     };
 
     replacePatientCall(storedCall);
@@ -106,7 +106,7 @@ router.post('/retell', async (req: Request, res: Response) => {
       endedAt,
       transcript,
       summary,
-      extractedData: extractDataFromTranscript({ transcript: rawTranscript } as VapiCallResponse),
+      extractedData: await extractDataFromTranscript(rawTranscript),
     };
 
     replacePatientCall(storedCall);

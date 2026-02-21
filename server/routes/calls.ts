@@ -120,11 +120,11 @@ router.get('/:callId/status', async (req: Request, res: Response) => {
       endedAt: vapiStatus.endedAt,
     };
 
-    // If call ended, extract data (use mock data regardless of transcript)
+    // If call ended, extract data from transcript using Claude
     if (mappedStatus === 'ended') {
-      console.log(`Call ${callId} ended, extracting mock data...`);
+      console.log(`Call ${callId} ended, extracting data from transcript...`);
       updates.transcript = vapiStatus.transcript || '';
-      updates.extractedData = extractDataFromTranscript(vapiStatus);
+      updates.extractedData = await extractDataFromTranscript(vapiStatus.transcript || '');
     }
 
     updateCall(callId, updates);
