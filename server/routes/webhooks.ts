@@ -2,7 +2,7 @@
 
 import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { createCall, getCall, updateCall } from '../store/demoStore.js';
+import { replacePatientCall } from '../store/demoStore.js';
 import { extractDataFromTranscript } from '../services/extractionService.js';
 import type { StoredCall, VapiCallResponse } from '../types.js';
 
@@ -19,12 +19,12 @@ function normalizeTranscript(transcript: string): string {
 
 // POST /api/webhooks/vapi
 // Vapi sends a POST for each call event; we only process end-of-call-report
+// Always overwrites the previous call for p-manpreet-vapi
 router.post('/vapi', async (req: Request, res: Response) => {
   try {
     const payload = req.body;
     const messageType = payload?.message?.type;
 
-    // Acknowledge all events immediately; only process end-of-call-report
     if (messageType !== 'end-of-call-report') {
       res.json({ received: true });
       return;
@@ -33,19 +33,24 @@ router.post('/vapi', async (req: Request, res: Response) => {
     const { message } = payload;
     const call = message.call;
 
-    // Default to Manpreet if no patientId in metadata (hardcoded for now)
-    const patientId: string = call?.metadata?.patientId || 'p-manpreet';
-    const patientName: string = call?.metadata?.patientName || 'Manpreet Singh';
+    const patientId: string = call?.metadata?.patientId || 'p-manpreet-vapi';
+    const patientName: string = call?.metadata?.patientName || 'Manpreet Vapi';
 
-    const vapiCallId: string = call.id;
+    const vapiCallId: string = call.id || uuidv4();
     const rawTranscript: string = message.transcript || '';
     const transcript = normalizeTranscript(rawTranscript);
     const summary: string = message.analysis?.summary || message.summary || '';
     const startedAt: string | undefined = call.startedAt;
     const endedAt: string | undefined = call.endedAt;
 
-    const callUpdates = {
-      status: 'ended' as const,
+    const storedCall: StoredCall = {
+      callId: vapiCallId,
+      patientId,
+      patientName,
+      phoneNumber: call.customer?.number || '',
+      vapiCallId,
+      createdAt: call.createdAt || new Date().toISOString(),
+      status: 'ended',
       transcript,
       summary,
       startedAt,
@@ -53,25 +58,9 @@ router.post('/vapi', async (req: Request, res: Response) => {
       extractedData: extractDataFromTranscript({ ...call, transcript: rawTranscript } as VapiCallResponse),
     };
 
-    // If this call was already created via the polling flow, update it;
-    // otherwise create a new record from the webhook data
-    const existing = getCall(vapiCallId);
-    if (existing) {
-      updateCall(vapiCallId, callUpdates);
-    } else {
-      const storedCall: StoredCall = {
-        callId: vapiCallId,
-        patientId,
-        patientName,
-        phoneNumber: call.customer?.number || '',
-        vapiCallId,
-        createdAt: call.createdAt || new Date().toISOString(),
-        ...callUpdates,
-      };
-      createCall(storedCall);
-    }
+    replacePatientCall(storedCall);
 
-    console.log(`[Vapi webhook] Processed end-of-call-report for patient ${patientId} (call ${vapiCallId})`);
+    console.log(`[Vapi webhook] Replaced call for patient ${patientId} (call ${vapiCallId})`);
     res.json({ received: true });
   } catch (error) {
     console.error('[Vapi webhook] Error processing payload:', error);
@@ -81,6 +70,7 @@ router.post('/vapi', async (req: Request, res: Response) => {
 
 // POST /api/webhooks/retell
 // Retell sends a POST for each call event; we only process call_ended
+// Always overwrites the previous call for p-manpreet-retell
 router.post('/retell', async (req: Request, res: Response) => {
   try {
     const payload = req.body;
@@ -91,14 +81,9 @@ router.post('/retell', async (req: Request, res: Response) => {
     }
 
     const { call } = payload;
-    const patientId: string | undefined = call?.metadata?.patientId;
-    const patientName: string = call?.metadata?.patientName || 'Unknown Patient';
 
-    if (!patientId) {
-      console.warn('[Retell webhook] Received call_ended without patientId in metadata — ignoring');
-      res.json({ received: true });
-      return;
-    }
+    const patientId: string = call?.metadata?.patientId || 'p-manpreet-retell';
+    const patientName: string = call?.metadata?.patientName || 'Manpreet Retell';
 
     const retellCallId: string = call.call_id || uuidv4();
     const rawTranscript: string = call.transcript || '';
@@ -124,9 +109,9 @@ router.post('/retell', async (req: Request, res: Response) => {
       extractedData: extractDataFromTranscript({ transcript: rawTranscript } as VapiCallResponse),
     };
 
-    createCall(storedCall);
+    replacePatientCall(storedCall);
 
-    console.log(`[Retell webhook] Processed call_ended for patient ${patientId} (call ${retellCallId})`);
+    console.log(`[Retell webhook] Replaced call for patient ${patientId} (call ${retellCallId})`);
     res.json({ received: true });
   } catch (error) {
     console.error('[Retell webhook] Error processing payload:', error);

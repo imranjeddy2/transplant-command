@@ -45,6 +45,19 @@ export function getAllCallsByPatientId(patientId: string): StoredCall[] {
   return Array.from(calls.values()).filter(call => call.patientId === patientId);
 }
 
+// Replace all existing calls for a patient with a single new one (overwrite mode)
+export function replacePatientCall(call: StoredCall): void {
+  for (const [callId, existing] of calls.entries()) {
+    if (existing.patientId === call.patientId) {
+      calls.delete(callId);
+    }
+  }
+  calls.set(call.callId, call);
+  if (call.extractedData) {
+    patientCallResults.set(call.patientId, call.extractedData);
+  }
+}
+
 export function getPatientCallResults(patientId: string): ExtractedCallData | undefined {
   return patientCallResults.get(patientId);
 }
