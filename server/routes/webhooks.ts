@@ -13,11 +13,12 @@ function verifySecret(req: Request, res: Response): boolean {
   const secret = process.env.WEBHOOK_SECRET;
   if (!secret) return true; // no secret configured, allow all (dev mode)
 
-  // Vapi sends it as x-vapi-secret, Retell as x-retell-signature or a custom header
+  // Vapi sends it as x-vapi-secret header; Retell via query param ?secret=
   const incoming =
     req.headers['x-vapi-secret'] ||
     req.headers['x-retell-signature'] ||
-    req.headers['x-webhook-secret'];
+    req.headers['x-webhook-secret'] ||
+    req.query['secret'];
 
   if (incoming !== secret) {
     console.warn('[Webhook] Rejected request — invalid or missing secret');
