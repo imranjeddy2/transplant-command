@@ -91,7 +91,9 @@ For each issue, the "proposedPhrase" MUST be:
 - Compliant with the relevant regulation
 - Natural marketing language (not legalese unless it's a required disclosure)
 - Similar in length and tone to the original where possible
-- Example: If excerpt is "Guaranteed lowest rate!", proposedPhrase could be "Competitive rates available — subject to credit approval and market conditions."
+- CONTEXTUALLY COHERENT: The replacement phrase will be inserted into the image in place of the original text. It MUST read naturally with the surrounding text that remains unchanged. Consider what comes before and after the excerpt in the image. The replacement should flow seamlessly as part of the full sentence/paragraph — do not create an orphaned or grammatically disconnected phrase.
+- SELF-CONTAINED: The phrase should make complete sense on its own when placed in the image. Do not reference things that won't be visible or assume the reader sees other changes.
+- Example: If the image says "Join today — Guaranteed lowest rate! Apply now" and the excerpt is "Guaranteed lowest rate!", the proposedPhrase should work in that sentence flow, e.g. "Competitive rates available*" (where the asterisk references a footnote with conditions).
 
 If no issues are found, return an empty issues array with complianceScore: 5.
 Always return at least a reading level assessment and clarity score.`;
