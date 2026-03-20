@@ -33,16 +33,17 @@ const CLARITY_LABELS: Record<number, { label: string; color: string; bg: string 
   5: { label: 'Very Clear', color: 'text-green-700', bg: 'bg-green-50' },
 };
 
-const MARKER_CSS_POSITIONS: Record<string, string> = {
-  'top-left': 'top-[8%] left-[8%]',
-  'top-center': 'top-[8%] left-1/2 -translate-x-1/2',
-  'top-right': 'top-[8%] right-[8%]',
-  'center-left': 'top-1/2 -translate-y-1/2 left-[8%]',
-  'center': 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
-  'center-right': 'top-1/2 -translate-y-1/2 right-[8%]',
-  'bottom-left': 'bottom-[8%] left-[8%]',
-  'bottom-center': 'bottom-[8%] left-1/2 -translate-x-1/2',
-  'bottom-right': 'bottom-[8%] right-[8%]',
+// Positions as percentage values for inline styles (avoids Tailwind translate conflicts)
+const MARKER_POSITIONS: Record<string, { top?: string; bottom?: string; left?: string; right?: string }> = {
+  'top-left': { top: '8%', left: '8%' },
+  'top-center': { top: '8%', left: '50%' },
+  'top-right': { top: '8%', right: '8%' },
+  'center-left': { top: '50%', left: '8%' },
+  'center': { top: '50%', left: '50%' },
+  'center-right': { top: '50%', right: '8%' },
+  'bottom-left': { bottom: '8%', left: '8%' },
+  'bottom-center': { bottom: '8%', left: '50%' },
+  'bottom-right': { bottom: '8%', right: '8%' },
 };
 
 function ScoreBar({ score, max = 5 }: { score: number; max?: number }) {
@@ -274,15 +275,23 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
                   const hint = issue.locationHint || 'center';
                   const idx = hintCounts[hint] || 0;
                   hintCounts[hint] = idx + 1;
-                  const pos = MARKER_CSS_POSITIONS[hint];
-                  // Offset overlapping markers horizontally
-                  const offsetPx = idx * 30;
+                  const basePos = MARKER_POSITIONS[hint] || MARKER_POSITIONS['center'];
+                  // Build inline style with horizontal offset for duplicates
+                  const style: React.CSSProperties = { position: 'absolute', ...basePos };
+                  // Parse left value and add offset
+                  if (basePos.left && idx > 0) {
+                    const leftNum = parseFloat(basePos.left);
+                    style.left = `calc(${leftNum}% + ${idx * 30}px)`;
+                  } else if (basePos.right && idx > 0) {
+                    const rightNum = parseFloat(basePos.right);
+                    style.right = `calc(${rightNum}% + ${idx * 30}px)`;
+                  }
                   return (
                     <button
                       key={issue.id}
                       onClick={() => setSelectedIssue(selectedIssue === issue.id ? null : issue.id)}
-                      style={offsetPx > 0 ? { marginLeft: `${offsetPx}px` } : undefined}
-                      className={`absolute ${pos} w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center cursor-pointer transition-all hover:scale-110 ${
+                      style={style}
+                      className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center cursor-pointer transition-all hover:scale-110 ${
                         issue.severity === 'high'
                           ? 'bg-red-500 text-white'
                           : issue.severity === 'medium'
