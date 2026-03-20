@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
   ZoomIn,
@@ -181,20 +180,11 @@ export function TaskViewer() {
 
   if (isComplete) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="min-h-screen flex items-center justify-center"
-      >
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-6">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', damping: 10 }}
-            className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto"
-          >
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
             <Check className="h-8 w-8 text-green-600" />
-          </motion.div>
+          </div>
           <div>
             <h2 className="text-xl font-semibold text-foreground">Review Complete</h2>
             <p className="text-muted-foreground mt-1">
@@ -216,7 +206,7 @@ export function TaskViewer() {
             </button>
           </div>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
@@ -239,32 +229,26 @@ export function TaskViewer() {
           </div>
         </div>
 
-        <AnimatePresence>
-          {showFields && task && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-3"
-            >
-              {needsExtraction && (
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium text-primary">AI Extracted</span>
+        {showFields && task && (
+          <div className="flex items-center gap-3">
+            {needsExtraction && (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-primary">AI Extracted</span>
+              </div>
+            )}
+            {(() => {
+              const status = statusConfig[task.status];
+              const StatusIcon = status.icon;
+              return (
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${status.bgColor}`}>
+                  <StatusIcon className={`h-4 w-4 ${status.color}`} />
+                  <span className={`text-sm font-medium ${status.color}`}>{status.label}</span>
                 </div>
-              )}
-              {(() => {
-                const status = statusConfig[task.status];
-                const StatusIcon = status.icon;
-                return (
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${status.bgColor}`}>
-                    <StatusIcon className={`h-4 w-4 ${status.color}`} />
-                    <span className={`text-sm font-medium ${status.color}`}>{status.label}</span>
-                  </div>
-                );
-              })()}
-            </motion.div>
-          )}
-        </AnimatePresence>
+              );
+            })()}
+          </div>
+        )}
       </div>
 
       {/* Main Content */}
@@ -436,292 +420,279 @@ export function TaskViewer() {
 
           {/* Form Content */}
           <div className="flex-1 overflow-auto p-6">
-            <AnimatePresence mode="wait">
-              {isExtracting ? (
-                <motion.div
-                  key="extracting"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex flex-col items-center justify-center h-full gap-4"
-                >
-                  <div className="relative">
-                    <Sparkles className="h-12 w-12 text-primary animate-pulse" />
-                  </div>
-                  <p className="text-muted-foreground">Extracting data from document...</p>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="form"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-4"
-                >
-                  {activeTab === 'patient' && (
-                    <>
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          label="First Name"
-                          value={extraction.firstName.value}
-                          confidence={extraction.firstName.confidence}
-                          onChange={(v) => updateField('firstName', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                        <FormField
-                          label="Last Name"
-                          value={extraction.lastName.value}
-                          confidence={extraction.lastName.confidence}
-                          onChange={(v) => updateField('lastName', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          label="Date of Birth"
-                          value={extraction.dateOfBirth.value}
-                          confidence={extraction.dateOfBirth.confidence}
-                          onChange={(v) => updateField('dateOfBirth', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                        <FormField
-                          label="SSN"
-                          value={extraction.ssn.value}
-                          confidence={extraction.ssn.confidence}
-                          onChange={(v) => updateField('ssn', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                      </div>
+            {isExtracting ? (
+              <div className="flex flex-col items-center justify-center h-full gap-4">
+                <div className="relative">
+                  <Sparkles className="h-12 w-12 text-primary animate-pulse" />
+                </div>
+                <p className="text-muted-foreground">Extracting data from document...</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {activeTab === 'patient' && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        label="First Name"
+                        value={extraction.firstName.value}
+                        confidence={extraction.firstName.confidence}
+                        onChange={(v) => updateField('firstName', v)}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
+                      />
+                      <FormField
+                        label="Last Name"
+                        value={extraction.lastName.value}
+                        confidence={extraction.lastName.confidence}
+                        onChange={(v) => updateField('lastName', v)}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        label="Date of Birth"
+                        value={extraction.dateOfBirth.value}
+                        confidence={extraction.dateOfBirth.confidence}
+                        onChange={(v) => updateField('dateOfBirth', v)}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
+                      />
+                      <FormField
+                        label="SSN"
+                        value={extraction.ssn.value}
+                        confidence={extraction.ssn.confidence}
+                        onChange={(v) => updateField('ssn', v)}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
+                      />
+                    </div>
+                    <FormField
+                      label="Phone"
+                      value={extraction.phone.value}
+                      confidence={extraction.phone.confidence}
+                      onChange={(v) => updateField('phone', v)}
+                      showAnimation={showFields && needsExtraction}
+                      readOnly={isReadOnly}
+                    />
+                    <FormField
+                      label="Address"
+                      value={extraction.address.value}
+                      confidence={extraction.address.confidence}
+                      onChange={(v) => updateField('address', v)}
+                      showAnimation={showFields && needsExtraction}
+                      readOnly={isReadOnly}
+                    />
+                  </>
+                )}
+
+                {activeTab === 'diagnosis' && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        label="GFR (ml/min)"
+                        value={extraction.gfr.value}
+                        confidence={extraction.gfr.confidence}
+                        onChange={(v) => updateField('gfr', v)}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
+                      />
+                      <FormField
+                        label="Creatinine (mg/dL)"
+                        value={extraction.creatinine.value}
+                        confidence={extraction.creatinine.confidence}
+                        onChange={(v) => updateField('creatinine', v)}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        label="Blood Type"
+                        value={extraction.bloodType.value}
+                        confidence={extraction.bloodType.confidence}
+                        onChange={(v) => updateField('bloodType', v)}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
+                      />
+                      <FormField
+                        label="BMI"
+                        value={extraction.bmi.value}
+                        confidence={extraction.bmi.confidence}
+                        onChange={(v) => updateField('bmi', v)}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
+                      />
+                    </div>
+                    <FormField
+                      label="Primary Diagnosis"
+                      value={extraction.primaryDiagnosis.value}
+                      confidence={extraction.primaryDiagnosis.confidence}
+                      onChange={(v) => updateField('primaryDiagnosis', v)}
+                      showAnimation={showFields && needsExtraction}
+                      readOnly={isReadOnly}
+                    />
+                    <div className="grid grid-cols-3 gap-4">
+                      <FormField
+                        label="Diabetes"
+                        value={extraction.diabetes.value}
+                        confidence={extraction.diabetes.confidence}
+                        onChange={(v) => updateField('diabetes', v)}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
+                      />
+                      <FormField
+                        label="Hypertension"
+                        value={extraction.hypertension.value}
+                        confidence={extraction.hypertension.confidence}
+                        onChange={(v) => updateField('hypertension', v)}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
+                      />
+                      <FormField
+                        label="Previous Transplants"
+                        value={extraction.previousTransplants.value}
+                        confidence={extraction.previousTransplants.confidence}
+                        onChange={(v) => updateField('previousTransplants', v)}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <FormField
+                        label="On Dialysis"
+                        value={extraction.onDialysis.value}
+                        confidence={extraction.onDialysis.confidence}
+                        onChange={(v) => updateField('onDialysis', v)}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
+                      />
+                      <FormField
+                        label="Dialysis Start Date"
+                        value={extraction.dialysisStartDate.value}
+                        confidence={extraction.dialysisStartDate.confidence}
+                        onChange={(v) => updateField('dialysisStartDate', v)}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
+                      />
+                      <FormField
+                        label="Dialysis Type"
+                        value={extraction.dialysisType.value}
+                        confidence={extraction.dialysisType.confidence}
+                        onChange={(v) => updateField('dialysisType', v)}
+                        showAnimation={showFields && needsExtraction}
+                        readOnly={isReadOnly}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {activeTab === 'referring' && (
+                  <>
+                    <FormField
+                      label="Provider Name"
+                      value={extraction.referringProviderName.value}
+                      confidence={extraction.referringProviderName.confidence}
+                      onChange={(v) => updateField('referringProviderName', v)}
+                      showAnimation={showFields && needsExtraction}
+                      readOnly={isReadOnly}
+                    />
+                    <FormField
+                      label="Organization"
+                      value={extraction.referringOrganization.value}
+                      confidence={extraction.referringOrganization.confidence}
+                      onChange={(v) => updateField('referringOrganization', v)}
+                      showAnimation={showFields && needsExtraction}
+                      readOnly={isReadOnly}
+                    />
+                    <FormField
+                      label="NPI"
+                      value={extraction.referringNpi.value}
+                      confidence={extraction.referringNpi.confidence}
+                      onChange={(v) => updateField('referringNpi', v)}
+                      showAnimation={showFields && needsExtraction}
+                      readOnly={isReadOnly}
+                    />
+                    <div className="grid grid-cols-2 gap-4">
                       <FormField
                         label="Phone"
-                        value={extraction.phone.value}
-                        confidence={extraction.phone.confidence}
-                        onChange={(v) => updateField('phone', v)}
+                        value={extraction.referringPhone.value}
+                        confidence={extraction.referringPhone.confidence}
+                        onChange={(v) => updateField('referringPhone', v)}
                         showAnimation={showFields && needsExtraction}
                         readOnly={isReadOnly}
                       />
                       <FormField
-                        label="Address"
-                        value={extraction.address.value}
-                        confidence={extraction.address.confidence}
-                        onChange={(v) => updateField('address', v)}
+                        label="Fax"
+                        value={extraction.referringFax.value}
+                        confidence={extraction.referringFax.confidence}
+                        onChange={(v) => updateField('referringFax', v)}
                         showAnimation={showFields && needsExtraction}
                         readOnly={isReadOnly}
                       />
-                    </>
-                  )}
+                    </div>
+                  </>
+                )}
 
-                  {activeTab === 'diagnosis' && (
-                    <>
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          label="GFR (ml/min)"
-                          value={extraction.gfr.value}
-                          confidence={extraction.gfr.confidence}
-                          onChange={(v) => updateField('gfr', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                        <FormField
-                          label="Creatinine (mg/dL)"
-                          value={extraction.creatinine.value}
-                          confidence={extraction.creatinine.confidence}
-                          onChange={(v) => updateField('creatinine', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          label="Blood Type"
-                          value={extraction.bloodType.value}
-                          confidence={extraction.bloodType.confidence}
-                          onChange={(v) => updateField('bloodType', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                        <FormField
-                          label="BMI"
-                          value={extraction.bmi.value}
-                          confidence={extraction.bmi.confidence}
-                          onChange={(v) => updateField('bmi', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                      </div>
-                      <FormField
-                        label="Primary Diagnosis"
-                        value={extraction.primaryDiagnosis.value}
-                        confidence={extraction.primaryDiagnosis.confidence}
-                        onChange={(v) => updateField('primaryDiagnosis', v)}
-                        showAnimation={showFields && needsExtraction}
-                        readOnly={isReadOnly}
-                      />
-                      <div className="grid grid-cols-3 gap-4">
-                        <FormField
-                          label="Diabetes"
-                          value={extraction.diabetes.value}
-                          confidence={extraction.diabetes.confidence}
-                          onChange={(v) => updateField('diabetes', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                        <FormField
-                          label="Hypertension"
-                          value={extraction.hypertension.value}
-                          confidence={extraction.hypertension.confidence}
-                          onChange={(v) => updateField('hypertension', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                        <FormField
-                          label="Previous Transplants"
-                          value={extraction.previousTransplants.value}
-                          confidence={extraction.previousTransplants.confidence}
-                          onChange={(v) => updateField('previousTransplants', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                      </div>
-                      <div className="grid grid-cols-3 gap-4">
-                        <FormField
-                          label="On Dialysis"
-                          value={extraction.onDialysis.value}
-                          confidence={extraction.onDialysis.confidence}
-                          onChange={(v) => updateField('onDialysis', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                        <FormField
-                          label="Dialysis Start Date"
-                          value={extraction.dialysisStartDate.value}
-                          confidence={extraction.dialysisStartDate.confidence}
-                          onChange={(v) => updateField('dialysisStartDate', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                        <FormField
-                          label="Dialysis Type"
-                          value={extraction.dialysisType.value}
-                          confidence={extraction.dialysisType.confidence}
-                          onChange={(v) => updateField('dialysisType', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                      </div>
-                    </>
-                  )}
+                {activeTab === 'receiving' && (
+                  <>
+                    <FormField
+                      label="Provider Name"
+                      value={extraction.receivingProviderName.value}
+                      confidence={extraction.receivingProviderName.confidence}
+                      onChange={(v) => updateField('receivingProviderName', v)}
+                      showAnimation={showFields && needsExtraction}
+                      readOnly={isReadOnly}
+                    />
+                    <FormField
+                      label="Organization"
+                      value={extraction.receivingOrganization.value}
+                      confidence={extraction.receivingOrganization.confidence}
+                      onChange={(v) => updateField('receivingOrganization', v)}
+                      showAnimation={showFields && needsExtraction}
+                      readOnly={isReadOnly}
+                    />
+                    <FormField
+                      label="NPI"
+                      value={extraction.receivingNpi.value}
+                      confidence={extraction.receivingNpi.confidence}
+                      onChange={(v) => updateField('receivingNpi', v)}
+                      showAnimation={showFields && needsExtraction}
+                      readOnly={isReadOnly}
+                    />
+                  </>
+                )}
 
-                  {activeTab === 'referring' && (
-                    <>
-                      <FormField
-                        label="Provider Name"
-                        value={extraction.referringProviderName.value}
-                        confidence={extraction.referringProviderName.confidence}
-                        onChange={(v) => updateField('referringProviderName', v)}
-                        showAnimation={showFields && needsExtraction}
-                        readOnly={isReadOnly}
-                      />
-                      <FormField
-                        label="Organization"
-                        value={extraction.referringOrganization.value}
-                        confidence={extraction.referringOrganization.confidence}
-                        onChange={(v) => updateField('referringOrganization', v)}
-                        showAnimation={showFields && needsExtraction}
-                        readOnly={isReadOnly}
-                      />
-                      <FormField
-                        label="NPI"
-                        value={extraction.referringNpi.value}
-                        confidence={extraction.referringNpi.confidence}
-                        onChange={(v) => updateField('referringNpi', v)}
-                        showAnimation={showFields && needsExtraction}
-                        readOnly={isReadOnly}
-                      />
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          label="Phone"
-                          value={extraction.referringPhone.value}
-                          confidence={extraction.referringPhone.confidence}
-                          onChange={(v) => updateField('referringPhone', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                        <FormField
-                          label="Fax"
-                          value={extraction.referringFax.value}
-                          confidence={extraction.referringFax.confidence}
-                          onChange={(v) => updateField('referringFax', v)}
-                          showAnimation={showFields && needsExtraction}
-                          readOnly={isReadOnly}
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  {activeTab === 'receiving' && (
-                    <>
-                      <FormField
-                        label="Provider Name"
-                        value={extraction.receivingProviderName.value}
-                        confidence={extraction.receivingProviderName.confidence}
-                        onChange={(v) => updateField('receivingProviderName', v)}
-                        showAnimation={showFields && needsExtraction}
-                        readOnly={isReadOnly}
-                      />
-                      <FormField
-                        label="Organization"
-                        value={extraction.receivingOrganization.value}
-                        confidence={extraction.receivingOrganization.confidence}
-                        onChange={(v) => updateField('receivingOrganization', v)}
-                        showAnimation={showFields && needsExtraction}
-                        readOnly={isReadOnly}
-                      />
-                      <FormField
-                        label="NPI"
-                        value={extraction.receivingNpi.value}
-                        confidence={extraction.receivingNpi.confidence}
-                        onChange={(v) => updateField('receivingNpi', v)}
-                        showAnimation={showFields && needsExtraction}
-                        readOnly={isReadOnly}
-                      />
-                    </>
-                  )}
-
-                  {activeTab === 'coverage' && (
-                    <>
-                      <FormField
-                        label="Insurance Carrier"
-                        value={extraction.insuranceCarrier.value}
-                        confidence={extraction.insuranceCarrier.confidence}
-                        onChange={(v) => updateField('insuranceCarrier', v)}
-                        showAnimation={showFields && needsExtraction}
-                        readOnly={isReadOnly}
-                      />
-                      <FormField
-                        label="Policy Number"
-                        value={extraction.policyNumber.value}
-                        confidence={extraction.policyNumber.confidence}
-                        onChange={(v) => updateField('policyNumber', v)}
-                        showAnimation={showFields && needsExtraction}
-                        readOnly={isReadOnly}
-                      />
-                      <FormField
-                        label="Group Number"
-                        value={extraction.groupNumber.value}
-                        confidence={extraction.groupNumber.confidence}
-                        onChange={(v) => updateField('groupNumber', v)}
-                        showAnimation={showFields && needsExtraction}
-                        readOnly={isReadOnly}
-                      />
-                    </>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                {activeTab === 'coverage' && (
+                  <>
+                    <FormField
+                      label="Insurance Carrier"
+                      value={extraction.insuranceCarrier.value}
+                      confidence={extraction.insuranceCarrier.confidence}
+                      onChange={(v) => updateField('insuranceCarrier', v)}
+                      showAnimation={showFields && needsExtraction}
+                      readOnly={isReadOnly}
+                    />
+                    <FormField
+                      label="Policy Number"
+                      value={extraction.policyNumber.value}
+                      confidence={extraction.policyNumber.confidence}
+                      onChange={(v) => updateField('policyNumber', v)}
+                      showAnimation={showFields && needsExtraction}
+                      readOnly={isReadOnly}
+                    />
+                    <FormField
+                      label="Group Number"
+                      value={extraction.groupNumber.value}
+                      confidence={extraction.groupNumber.confidence}
+                      onChange={(v) => updateField('groupNumber', v)}
+                      showAnimation={showFields && needsExtraction}
+                      readOnly={isReadOnly}
+                    />
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Footer */}

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Filter, Clock, CheckCircle2, AlertCircle, Circle, XCircle } from 'lucide-react';
 import { tasks } from '@/data/mockData';
 import type { Task, TaskStatus } from '@/types';
@@ -132,16 +131,13 @@ export function TaskDashboard() {
             </tr>
           </thead>
           <tbody>
-            {filteredTasks.map((task, index) => {
+            {filteredTasks.map((task) => {
               const status = statusConfig[task.status];
               const StatusIcon = status.icon;
 
               return (
-                <motion.tr
+                <tr
                   key={task.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.03 }}
                   onClick={() => handleTaskClick(task)}
                   className="border-b border-border last:border-0 cursor-pointer hover:bg-muted/50 transition-colors"
                 >
@@ -172,7 +168,7 @@ export function TaskDashboard() {
                       {task.referringProvider || '—'}
                     </span>
                   </td>
-                </motion.tr>
+                </tr>
               );
             })}
           </tbody>

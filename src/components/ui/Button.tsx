@@ -1,5 +1,4 @@
 import { forwardRef, type ReactNode } from 'react';
-import { motion } from 'framer-motion';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive' | 'outline';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -50,12 +49,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const isDisabled = disabled || isLoading;
 
     return (
-      <motion.button
+      <button
         ref={ref}
         type={type}
         onClick={onClick}
-        whileHover={isDisabled ? undefined : { scale: 1.02 }}
-        whileTap={isDisabled ? undefined : { scale: 0.98 }}
         className={`
           inline-flex items-center justify-center font-medium rounded-lg
           transition-colors duration-150 ease-out
@@ -93,7 +90,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {children}
         {!isLoading && rightIcon}
-      </motion.button>
+      </button>
     );
   }
 );

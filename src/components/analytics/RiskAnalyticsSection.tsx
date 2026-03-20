@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   PieChart,
   Pie,
@@ -16,7 +15,7 @@ import {
   ReferenceLine,
   CartesianGrid,
 } from 'recharts';
-import { Shield, TrendingUp, Activity, AlertTriangle, Target, BarChart3, LineChart, ChevronDown, Settings2, Heart, Droplets, Clock, Zap, Cigarette, Pill, Ribbon, Footprints } from 'lucide-react';
+import { ChevronDown, Settings2 } from 'lucide-react';
 import {
   riskAnalyticsData,
   modelPerformanceData,
@@ -55,20 +54,10 @@ function ModelPerformanceChart() {
   }));
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      className="bg-card rounded-xl border border-border p-6"
-    >
+    <div className="bg-card rounded-md border border-border p-6">
       <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <Target className="h-5 w-5 text-primary" />
-          <h3 className="text-base font-medium text-foreground">Model Performance</h3>
-        </div>
-        <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-          Validated
-        </span>
+        <h3 className="text-base font-medium text-foreground">Model Performance</h3>
+        <span className="text-xs text-green-700 font-medium">Validated</span>
       </div>
 
       <SummaryBox variant="success">
@@ -123,7 +112,7 @@ function ModelPerformanceChart() {
       <p className="text-xs text-muted-foreground mt-2 text-center">
         Validated on {modelPerformanceData.validationInfo.sampleSize.toLocaleString()} patients • {modelPerformanceData.validationInfo.validationPeriod}
       </p>
-    </motion.div>
+    </div>
   );
 }
 
@@ -137,20 +126,10 @@ function CalibrationCurveChart() {
   }));
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4 }}
-      className="lg:col-span-2 bg-card rounded-xl border border-border p-6"
-    >
+    <div className="lg:col-span-2 bg-card rounded-md border border-border p-6">
       <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <LineChart className="h-5 w-5 text-primary" />
-          <h3 className="text-base font-medium text-foreground">Calibration Curve</h3>
-        </div>
-        <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-          Good calibration
-        </span>
+        <h3 className="text-base font-medium text-foreground">Calibration Curve</h3>
+        <span className="text-xs text-green-700 font-medium">Good calibration</span>
       </div>
 
       <SummaryBox variant="success">
@@ -197,9 +176,9 @@ function CalibrationCurveChart() {
             <Line
               type="monotone"
               dataKey="actual"
-              stroke="#9333EA"
+              stroke="#1D4ED8"
               strokeWidth={2}
-              dot={{ fill: '#9333EA', strokeWidth: 2, r: 4 }}
+              dot={{ fill: '#1D4ED8', strokeWidth: 2, r: 4 }}
               name="Actual Outcomes"
             />
           </ComposedChart>
@@ -216,7 +195,7 @@ function CalibrationCurveChart() {
           <span className="text-muted-foreground">Actual model</span>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -241,16 +220,8 @@ function RiskScoreDistributionChart() {
   const highRiskPct = data.filter(d => d.scoreMidpoint >= thresholds.mediumToHigh).reduce((sum, d) => sum + d.percentage, 0);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
-      className="bg-card rounded-xl border border-border p-6"
-    >
-      <div className="flex items-center gap-2 mb-2">
-        <BarChart3 className="h-5 w-5 text-primary" />
-        <h3 className="text-base font-medium text-foreground">Risk Score Distribution</h3>
-      </div>
+    <div className="bg-card rounded-md border border-border p-6">
+      <h3 className="text-base font-medium text-foreground mb-2">Risk Score Distribution</h3>
 
       <SummaryBox>
         Most patients cluster around scores of <strong>30-40</strong>. {lowRiskPct}% are low-risk, {medRiskPct}% medium-risk, and {highRiskPct}% high-risk.
@@ -314,30 +285,30 @@ function RiskScoreDistributionChart() {
         <span>Median: <strong className="text-foreground">{stats.median}</strong></span>
         <span>Std Dev: <strong className="text-foreground">{stats.standardDeviation}</strong></span>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
-// Category icons and colors for Variable Importance
-const CATEGORY_CONFIG: Record<string, { icon: typeof Heart; label: string; color: string; bgColor: string }> = {
-  cardiac: { icon: Heart, label: 'Cardiac', color: '#DC2626', bgColor: 'bg-red-50' },
-  diabetes: { icon: Droplets, label: 'Diabetes', color: '#EA580C', bgColor: 'bg-orange-50' },
-  sensitization: { icon: Zap, label: 'Sensitization', color: '#7C3AED', bgColor: 'bg-purple-50' },
-  dialysis: { icon: Clock, label: 'Dialysis', color: '#2563EB', bgColor: 'bg-blue-50' },
-  lifestyle: { icon: Cigarette, label: 'Lifestyle', color: '#0891B2', bgColor: 'bg-cyan-50' },
-  compliance: { icon: Pill, label: 'Compliance', color: '#059669', bgColor: 'bg-emerald-50' },
-  cancer: { icon: Ribbon, label: 'Oncology', color: '#BE185D', bgColor: 'bg-pink-50' },
-  functional: { icon: Footprints, label: 'Functional', color: '#4F46E5', bgColor: 'bg-indigo-50' },
+// Category config for Variable Importance
+const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
+  cardiac:       { label: 'Cardiac',       color: '#DC2626' },
+  diabetes:      { label: 'Diabetes',      color: '#D97706' },
+  sensitization: { label: 'Sensitization', color: '#1D4ED8' },
+  dialysis:      { label: 'Dialysis',      color: '#0891B2' },
+  lifestyle:     { label: 'Lifestyle',     color: '#6B7280' },
+  compliance:    { label: 'Compliance',    color: '#16A34A' },
+  cancer:        { label: 'Oncology',      color: '#9D174D' },
+  functional:    { label: 'Functional',    color: '#4F46E5' },
 };
 
-// Variable Importance Chart - Redesigned
+// Variable Importance Chart
 function VariableImportanceChart() {
   const data = riskAnalyticsData.variableImportance
     .sort((a, b) => b.importance - a.importance)
     .map((item, index) => ({
       ...item,
       rank: index + 1,
-      config: CATEGORY_CONFIG[item.category] || { icon: Activity, label: item.category, color: '#6B7280', bgColor: 'bg-gray-50' },
+      config: CATEGORY_CONFIG[item.category] || { label: item.category, color: '#6B7280' },
     }));
 
   const maxImportance = Math.max(...data.map(d => d.importance));
@@ -345,99 +316,36 @@ function VariableImportanceChart() {
   const topCategories = [...new Set(topThree.map(d => d.config.label))].join(', ');
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-      className="lg:col-span-2 bg-card rounded-xl border border-border p-6"
-    >
+    <div className="lg:col-span-2 bg-card rounded-md border border-border p-6">
       <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-primary" />
-          <h3 className="text-base font-medium text-foreground">Variable Importance</h3>
-        </div>
-        <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-full">
-          {data.length} factors
-        </span>
+        <h3 className="text-base font-medium text-foreground">Variable Importance</h3>
+        <span className="text-xs text-muted-foreground">{data.length} factors</span>
       </div>
 
       <SummaryBox>
         The top predictors are <strong>{topCategories}</strong>. Cardiac history alone accounts for <strong>{topThree[0]?.importance}%</strong> of the risk calculation.
       </SummaryBox>
 
-      <div className="mt-4 space-y-2">
-        {data.map((item, index) => {
-          const Icon = item.config.icon;
+      <div className="mt-4 space-y-1.5">
+        {data.map((item) => {
           const barWidth = (item.importance / maxImportance) * 100;
-          const isTopThree = index < 3;
 
           return (
-            <motion.div
-              key={item.variable}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 + index * 0.03 }}
-              className={`group flex items-center gap-3 p-2 rounded-lg transition-colors ${
-                isTopThree ? 'bg-muted/50' : 'hover:bg-muted/30'
-              }`}
-            >
-              {/* Rank Badge */}
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 ${
-                isTopThree
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground'
-              }`}>
-                {item.rank}
+            <div key={item.variable} className="flex items-center gap-3 py-1 border-l-2 pl-3" style={{ borderLeftColor: item.config.color }}>
+              <span className="text-xs text-muted-foreground w-4 text-right flex-shrink-0">{item.rank}</span>
+              <span className="text-sm text-foreground w-44 flex-shrink-0 truncate">{item.variable}</span>
+              <div className="flex-1 h-1.5 bg-muted rounded-sm overflow-hidden">
+                <div
+                  className="h-full rounded-sm"
+                  style={{ width: `${barWidth}%`, backgroundColor: item.config.color }}
+                />
               </div>
-
-              {/* Icon */}
-              <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${item.config.bgColor}`}
-              >
-                <Icon className="h-4 w-4" style={{ color: item.config.color }} />
-              </div>
-
-              {/* Variable Name & Bar */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <span className={`text-sm truncate ${isTopThree ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
-                    {item.variable}
-                  </span>
-                  <span className={`text-sm font-semibold ml-2 ${isTopThree ? 'text-foreground' : 'text-muted-foreground'}`}>
-                    {item.importance}%
-                  </span>
-                </div>
-                {/* Progress Bar */}
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${barWidth}%` }}
-                    transition={{ delay: 0.3 + index * 0.05, duration: 0.5, ease: 'easeOut' }}
-                    className="h-full rounded-full"
-                    style={{ backgroundColor: item.config.color }}
-                  />
-                </div>
-              </div>
-            </motion.div>
+              <span className="text-sm text-muted-foreground w-10 text-right flex-shrink-0">{item.importance}%</span>
+            </div>
           );
         })}
       </div>
-
-      {/* Category Legend */}
-      <div className="mt-4 pt-4 border-t border-border">
-        <div className="flex flex-wrap gap-3">
-          {Object.entries(CATEGORY_CONFIG).slice(0, 6).map(([key, config]) => {
-            const Icon = config.icon;
-            return (
-              <div key={key} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Icon className="h-3 w-3" style={{ color: config.color }} />
-                <span>{config.label}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -450,17 +358,9 @@ function OutcomeTrackingChart() {
   const trendColor = aggregate.trend === 'improving' ? 'text-green-600' : aggregate.trend === 'declining' ? 'text-red-600' : 'text-gray-600';
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.6 }}
-      className="bg-card rounded-xl border border-border p-6"
-    >
+    <div className="bg-card rounded-md border border-border p-6">
       <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <Activity className="h-5 w-5 text-primary" />
-          <h3 className="text-base font-medium text-foreground">Outcome Tracking</h3>
-        </div>
+        <h3 className="text-base font-medium text-foreground">Outcome Tracking</h3>
         <span className={`text-sm font-medium ${trendColor}`}>
           {aggregate.overallAccuracy}% accuracy {trendIcon}
         </span>
@@ -472,54 +372,35 @@ function OutcomeTrackingChart() {
 
       <div className="h-48 mt-4">
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
             <XAxis dataKey="month" stroke="#9CA3AF" fontSize={10} />
             <YAxis stroke="#9CA3AF" fontSize={10} />
             <Tooltip
               contentStyle={{
                 backgroundColor: '#FFFFFF',
-                border: '1px solid #E5E7EB',
-                borderRadius: '8px',
+                border: '1px solid #D1D5DB',
+                borderRadius: '4px',
+                fontSize: '12px',
               }}
             />
-            <Bar dataKey="actualComplications" fill="#E5E7EB" radius={[4, 4, 0, 0]} name="Actual Complications" />
-            <Line
-              type="monotone"
-              dataKey="predictedHighRisk"
-              stroke="#9333EA"
-              strokeWidth={2}
-              dot={{ fill: '#9333EA', strokeWidth: 2, r: 3 }}
-              name="Predicted High Risk"
-            />
-            <Line
-              type="monotone"
-              dataKey="truePositives"
-              stroke="#10B981"
-              strokeWidth={2}
-              strokeDasharray="5 5"
-              dot={{ fill: '#10B981', strokeWidth: 2, r: 3 }}
-              name="True Positives"
-            />
-          </ComposedChart>
+            <Bar dataKey="actualComplications" fill="#93C5FD" name="Actual Complications" />
+            <Bar dataKey="truePositives" fill="#1D4ED8" name="True Positives" />
+          </BarChart>
         </ResponsiveContainer>
       </div>
 
       <div className="flex gap-4 mt-2 justify-center text-xs">
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-gray-200" />
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 bg-blue-200" />
           <span className="text-muted-foreground">Complications</span>
         </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-0.5 bg-primary" />
-          <span className="text-muted-foreground">Predicted</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-0.5 bg-green-500" style={{ borderStyle: 'dashed' }} />
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 bg-primary" />
           <span className="text-muted-foreground">True Positives</span>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -536,22 +417,14 @@ export function RiskAnalyticsSection() {
   return (
     <div className="space-y-6">
       {/* Section Header */}
-      <div className="flex items-center gap-2">
-        <Shield className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold text-foreground">Risk Assessment Analytics</h2>
-      </div>
+      <h2 className="text-lg font-semibold text-foreground">Risk Assessment Analytics</h2>
 
       {/* Row 1: Risk Distribution + Outcome Tracking (stacked) | Variable Importance */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Stacked charts */}
         <div className="space-y-6">
           {/* Risk Distribution */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-card rounded-xl border border-border p-6"
-          >
+          <div className="bg-card rounded-md border border-border p-6">
             <h3 className="text-base font-medium text-foreground mb-4">Patient Risk Distribution</h3>
             <div className="h-40">
               <ResponsiveContainer width="100%" height="100%">
@@ -594,7 +467,7 @@ export function RiskAnalyticsSection() {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Outcome Tracking - moved here */}
           <OutcomeTrackingChart />
@@ -610,16 +483,8 @@ export function RiskAnalyticsSection() {
       {/* Model Metrics (existing) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Model Confidence */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="bg-card rounded-xl border border-border p-6"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            <h3 className="text-base font-medium text-foreground">Model Confidence</h3>
-          </div>
+        <div className="bg-card rounded-md border border-border p-6">
+          <h3 className="text-base font-medium text-foreground mb-4">Model Confidence</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Overall Accuracy</span>
@@ -637,19 +502,11 @@ export function RiskAnalyticsSection() {
               Based on historical outcomes and clinical validation
             </p>
           </div>
-        </motion.div>
+        </div>
 
         {/* Patients Assessed */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="bg-card rounded-xl border border-border p-6"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <Activity className="h-5 w-5 text-green-500" />
-            <h3 className="text-base font-medium text-foreground">Patients Assessed</h3>
-          </div>
+        <div className="bg-card rounded-md border border-border p-6">
+          <h3 className="text-base font-medium text-foreground mb-4">Patients Assessed</h3>
           <div className="space-y-3">
             <p className="text-3xl font-semibold text-foreground">
               {riskAnalyticsData.totalAssessed}
@@ -662,19 +519,11 @@ export function RiskAnalyticsSection() {
               <span className="text-muted-foreground">this week</span>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* High Risk Alert */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-          className="bg-card rounded-xl border border-border p-6"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle className="h-5 w-5 text-red-500" />
-            <h3 className="text-base font-medium text-foreground">High Risk Patients</h3>
-          </div>
+        <div className="bg-card rounded-md border border-border p-6">
+          <h3 className="text-base font-medium text-foreground mb-4">High Risk Patients</h3>
           <div className="space-y-3">
             <p className="text-3xl font-semibold text-foreground">
               {Math.round(riskAnalyticsData.totalAssessed * riskAnalyticsData.distribution.high / 100)}
@@ -694,16 +543,11 @@ export function RiskAnalyticsSection() {
               </span>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* Methodology Note */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.0 }}
-        className="bg-muted/30 rounded-lg p-4 border border-border"
-      >
+      <div className="bg-muted/30 rounded-lg p-4 border border-border">
         <h4 className="text-sm font-medium text-foreground mb-2">Methodology</h4>
         <p className="text-sm text-muted-foreground">
           Risk scores are calculated using a rule-based algorithm that weighs clinical factors including
@@ -712,15 +556,10 @@ export function RiskAnalyticsSection() {
           based on clinical feedback. Variable importance reflects the contribution of each factor category
           to the overall risk determination.
         </p>
-      </motion.div>
+      </div>
 
       {/* Advanced Model Details - Collapsible Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.1 }}
-        className="bg-card rounded-xl border border-border overflow-hidden"
-      >
+      <div className="bg-card rounded-md border border-border overflow-hidden">
         <button
           onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
           className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
@@ -736,34 +575,23 @@ export function RiskAnalyticsSection() {
               </p>
             </div>
           </div>
-          <motion.div
-            animate={{ rotate: isAdvancedOpen ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ChevronDown className="h-5 w-5 text-muted-foreground" />
-          </motion.div>
+          <ChevronDown
+            className={`h-5 w-5 text-muted-foreground transition-transform ${isAdvancedOpen ? 'rotate-180' : ''}`}
+          />
         </button>
 
-        <AnimatePresence>
-          {isAdvancedOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="overflow-hidden"
-            >
-              <div className="p-4 pt-0 space-y-6 border-t border-border">
-                {/* Model Performance + Calibration Curve */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
-                  <ModelPerformanceChart />
-                  <CalibrationCurveChart />
-                </div>
+        {isAdvancedOpen && (
+          <div className="overflow-hidden">
+            <div className="p-4 pt-0 space-y-6 border-t border-border">
+              {/* Model Performance + Calibration Curve */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
+                <ModelPerformanceChart />
+                <CalibrationCurveChart />
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

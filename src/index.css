@@ -5,60 +5,60 @@
 
 :root {
   /* TransplantCommand Design Tokens */
-  --bg-canvas: #fdfaf9;
-  --bg-sidebar: #f4f1f0;
+  --bg-canvas: #F9FAFB;
+  --bg-sidebar: #1E293B;
   --bg-card: #FFFFFF;
-  --bg-input: #F7F4F2;
+  --bg-input: #F3F4F6;
 
-  --accent-primary: #9333EA;
-  --accent-primary-hover: #A855F7;
+  --accent-primary: #1D4ED8;
+  --accent-primary-hover: #1E40AF;
 
-  --status-success: #10B981;
-  --status-review: #9333EA;
-  --status-warning: #F59E0B;
-  --status-error: #EF4444;
+  --status-success: #16A34A;
+  --status-review: #1D4ED8;
+  --status-warning: #D97706;
+  --status-error: #DC2626;
   --status-pending: #6B7280;
 
-  --text-primary: #1F2937;
-  --text-secondary: #4B5563;
+  --text-primary: #111827;
+  --text-secondary: #374151;
   --text-muted: #9CA3AF;
 
-  --border-default: #E5E7EB;
-  --border-focus: #9333EA;
+  --border-default: #D1D5DB;
+  --border-focus: #1D4ED8;
 
-  /* shadcn variables - customized for TransplantCommand */
-  --radius: 0.625rem;
-  --background: #fdfaf9;
-  --foreground: #1F2937;
+  /* shadcn variables */
+  --radius: 0.375rem;
+  --background: #F9FAFB;
+  --foreground: #111827;
   --card: #FFFFFF;
-  --card-foreground: #1F2937;
+  --card-foreground: #111827;
   --popover: #FFFFFF;
-  --popover-foreground: #1F2937;
-  --primary: #9333EA;
+  --popover-foreground: #111827;
+  --primary: #1D4ED8;
   --primary-foreground: #FFFFFF;
-  --secondary: #F7F4F2;
-  --secondary-foreground: #1F2937;
-  --muted: #F7F4F2;
+  --secondary: #F3F4F6;
+  --secondary-foreground: #111827;
+  --muted: #F3F4F6;
   --muted-foreground: #6B7280;
-  --accent: #F7F4F2;
-  --accent-foreground: #1F2937;
-  --destructive: #EF4444;
-  --border: #E5E7EB;
-  --input: #E5E7EB;
-  --ring: #9333EA;
-  --chart-1: #9333EA;
-  --chart-2: #10B981;
-  --chart-3: #F59E0B;
-  --chart-4: #3B82F6;
-  --chart-5: #EC4899;
-  --sidebar: #f4f1f0;
-  --sidebar-foreground: #1F2937;
-  --sidebar-primary: #9333EA;
+  --accent: #EFF6FF;
+  --accent-foreground: #1E40AF;
+  --destructive: #DC2626;
+  --border: #D1D5DB;
+  --input: #D1D5DB;
+  --ring: #1D4ED8;
+  --chart-1: #1D4ED8;
+  --chart-2: #16A34A;
+  --chart-3: #D97706;
+  --chart-4: #0891B2;
+  --chart-5: #7C3AED;
+  --sidebar: #1E293B;
+  --sidebar-foreground: #F1F5F9;
+  --sidebar-primary: #3B82F6;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #E8E4E2;
-  --sidebar-accent-foreground: #1F2937;
-  --sidebar-border: #E0DCDA;
-  --sidebar-ring: #9333EA;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: #F1F5F9;
+  --sidebar-border: #334155;
+  --sidebar-ring: #3B82F6;
 }
 
 @theme inline {
@@ -116,7 +116,7 @@
     min-height: 100vh;
   }
 
-  /* Improved focus states for accessibility */
+  /* Focus states */
   button:focus-visible,
   a:focus-visible,
   input:focus-visible,
@@ -125,12 +125,10 @@
     @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
   }
 
-  /* Smooth scrolling */
   html {
     scroll-behavior: smooth;
   }
 
-  /* Better scrollbar styling */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -149,27 +147,18 @@
     background: #9ca3af;
   }
 
-  /* Selection styling */
   ::selection {
-    background: rgba(147, 51, 234, 0.2);
+    background: rgba(29, 78, 216, 0.15);
     color: inherit;
   }
 }
 
-/* Utility classes for enhanced cards */
 @layer utilities {
   .card-elevated {
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.07);
   }
 
   .card-elevated:hover {
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-  }
-
-  .text-gradient {
-    background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
   }
 }

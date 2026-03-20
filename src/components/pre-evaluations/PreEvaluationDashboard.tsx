@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Filter, Bell, Calendar, CheckCircle2, ShieldCheck, PhoneCall } from 'lucide-react';
 import { getAllPreEvaluations } from '@/data/mockData';
 import type { PreEvaluationStatus } from '@/types';
@@ -147,16 +146,13 @@ export function PreEvaluationDashboard() {
             </tr>
           </thead>
           <tbody>
-            {filteredPreEvals.map((preEval, index) => {
+            {filteredPreEvals.map((preEval) => {
               const status = statusConfig[preEval.status];
               const StatusIcon = status.icon;
 
               return (
-                <motion.tr
+                <tr
                   key={preEval.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.03 }}
                   onClick={() => handleRowClick(preEval.patientId)}
                   className="border-b border-border last:border-0 cursor-pointer hover:bg-muted/50 transition-colors"
                 >
@@ -189,7 +185,7 @@ export function PreEvaluationDashboard() {
                       {formatDateTime(getLastUpdated(preEval))}
                     </span>
                   </td>
-                </motion.tr>
+                </tr>
               );
             })}
           </tbody>

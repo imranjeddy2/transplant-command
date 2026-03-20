@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { AlertCircle, Loader2, Phone } from 'lucide-react';
 import { getTransplantCenter, defaultCenterId } from '@/config/transplantCenters';
 import {
@@ -56,11 +55,7 @@ function ErrorView({ errorType, center }: { errorType: ErrorType; center: Transp
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center"
-      >
+      <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <AlertCircle className="h-8 w-8 text-red-600" />
         </div>
@@ -77,7 +72,7 @@ function ErrorView({ errorType, center }: { errorType: ErrorType; center: Transp
             </a>
           </p>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -85,14 +80,10 @@ function ErrorView({ errorType, center }: { errorType: ErrorType; center: Transp
 function LoadingView() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="text-center"
-      >
+      <div className="text-center">
         <Loader2 className="h-8 w-8 text-purple-600 animate-spin mx-auto mb-4" />
         <p className="text-gray-600">Loading your information...</p>
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -248,12 +239,7 @@ export function SchedulingPage() {
             <CallExplanation />
 
             {/* Call Me Now Option */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6"
-            >
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
@@ -284,7 +270,7 @@ export function SchedulingPage() {
                   )}
                 </button>
               </div>
-            </motion.div>
+            </div>
 
             {/* Divider */}
             <div className="relative">

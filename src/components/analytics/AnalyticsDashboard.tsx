@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import {
   LineChart,
   Line,
@@ -11,47 +10,30 @@ import {
   Pie,
   Cell,
 } from 'recharts';
-import { TrendingUp, Users, Clock, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 import { trendData, insuranceBreakdown, analyticsMetrics } from '@/data/mockData';
 import { RiskAnalyticsSection } from './RiskAnalyticsSection';
 
-const COLORS = ['#9333EA', '#10B981', '#3B82F6', '#F59E0B', '#EC4899'];
+const COLORS = ['#1D4ED8', '#16A34A', '#0891B2', '#D97706', '#6B7280'];
 
 interface MetricCardProps {
   title: string;
   value: string | number;
   subtitle?: string;
-  icon: typeof TrendingUp;
   trend?: { value: number; label: string };
-  color?: string;
 }
 
-function MetricCard({ title, value, subtitle, icon: Icon, trend, color = 'primary' }: MetricCardProps) {
+function MetricCard({ title, value, subtitle, trend }: MetricCardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-card rounded-xl border border-border p-6"
-    >
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-3xl font-semibold text-foreground mt-2">{value}</p>
-          {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
-          {trend && (
-            <p
-              className={`text-sm mt-2 ${trend.value >= 0 ? 'text-green-600' : 'text-red-600'}`}
-            >
-              {trend.value >= 0 ? '+' : ''}
-              {trend.value}% {trend.label}
-            </p>
-          )}
-        </div>
-        <div className={`p-3 rounded-lg bg-${color}/10`}>
-          <Icon className={`h-6 w-6 text-${color}`} />
-        </div>
-      </div>
-    </motion.div>
+    <div className="bg-card rounded-md border border-border p-6">
+      <p className="text-sm font-medium text-muted-foreground">{title}</p>
+      <p className="text-3xl font-semibold text-foreground mt-2">{value}</p>
+      {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
+      {trend && (
+        <p className={`text-sm mt-2 ${trend.value >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          {trend.value >= 0 ? '+' : ''}{trend.value}% {trend.label}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -77,28 +59,24 @@ export function AnalyticsDashboard() {
           title="Total Referrals"
           value={analyticsMetrics.totalReferrals}
           subtitle="This month"
-          icon={Users}
           trend={{ value: 12, label: 'vs last month' }}
         />
         <MetricCard
           title="New Patients"
           value={`${analyticsMetrics.newPatientsPercent}%`}
           subtitle={`${analyticsMetrics.newPatients} patients`}
-          icon={TrendingUp}
           trend={{ value: 8, label: 'vs last month' }}
         />
         <MetricCard
           title="Evaluation Rate"
           value={`${analyticsMetrics.evaluationRate}%`}
           subtitle="Referrals evaluated"
-          icon={CheckCircle2}
           trend={{ value: 5, label: 'vs last month' }}
         />
         <MetricCard
           title="Avg. Processing Time"
           value={`${analyticsMetrics.avgProcessingDays}`}
           subtitle="Days"
-          icon={Clock}
           trend={{ value: -15, label: 'vs last month' }}
         />
       </div>
@@ -106,12 +84,7 @@ export function AnalyticsDashboard() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Trend Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="lg:col-span-2 bg-card rounded-xl border border-border p-6"
-        >
+        <div className="lg:col-span-2 bg-card rounded-md border border-border p-6">
           <h3 className="text-lg font-medium text-foreground mb-4">Referral Trends</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -129,9 +102,9 @@ export function AnalyticsDashboard() {
                 <Line
                   type="monotone"
                   dataKey="referrals"
-                  stroke="#9333EA"
+                  stroke="#1D4ED8"
                   strokeWidth={2}
-                  dot={{ fill: '#9333EA', strokeWidth: 2 }}
+                  dot={{ fill: '#1D4ED8', strokeWidth: 2 }}
                   name="Referrals"
                 />
                 <Line
@@ -155,15 +128,10 @@ export function AnalyticsDashboard() {
               <span className="text-sm text-muted-foreground">Evaluations</span>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Insurance Breakdown */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-card rounded-xl border border-border p-6"
-        >
+        <div className="bg-card rounded-md border border-border p-6">
           <h3 className="text-lg font-medium text-foreground mb-4">Insurance Breakdown</h3>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
@@ -205,21 +173,13 @@ export function AnalyticsDashboard() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* AI Performance */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-card rounded-xl border border-border p-6"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-medium text-foreground">AI Performance</h3>
-          </div>
+        <div className="bg-card rounded-md border border-border p-6">
+          <h3 className="text-base font-medium text-foreground mb-4">Extraction Accuracy</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Extraction Accuracy</span>
@@ -238,18 +198,10 @@ export function AnalyticsDashboard() {
               edits
             </p>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="bg-card rounded-xl border border-border p-6"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <AlertCircle className="h-5 w-5 text-amber-500" />
-            <h3 className="text-lg font-medium text-foreground">Pending Actions</h3>
-          </div>
+        <div className="bg-card rounded-md border border-border p-6">
+          <h3 className="text-base font-medium text-foreground mb-4">Pending Actions</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
               <span className="text-foreground">Reviews Pending</span>
@@ -264,7 +216,7 @@ export function AnalyticsDashboard() {
               </span>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

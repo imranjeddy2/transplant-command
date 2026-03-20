@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import {
   Bell,
   Calendar,
@@ -195,25 +194,16 @@ export function PreEvalResultsTab({ preEvaluation, riskAssessment, patientName }
     <div className="space-y-6">
       {/* Risk Assessment - First (most important) */}
       {hasResults && riskAssessment && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
+        <div>
           <RiskAssessmentPanel
             assessment={riskAssessment}
             patientName={patientName || 'Patient'}
           />
-        </motion.div>
+        </div>
       )}
 
       {/* Status Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="bg-card rounded-lg border border-border p-6"
-      >
+      <div className="bg-card rounded-lg border border-border p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${statusInfo.bgColor}`}>
@@ -242,16 +232,11 @@ export function PreEvalResultsTab({ preEvaluation, riskAssessment, patientName }
             </p>
           </div>
         )}
-      </motion.div>
+      </div>
 
       {/* Medical History Section */}
       {hasResults && preEvaluation.medicalHistory && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-card rounded-lg border border-border p-6"
-        >
+        <div className="bg-card rounded-lg border border-border p-6">
           <div className="flex items-center gap-2 mb-4">
             <Stethoscope className="h-5 w-5 text-primary" />
             <h3 className="font-semibold text-foreground">Medical History</h3>
@@ -278,17 +263,12 @@ export function PreEvalResultsTab({ preEvaluation, riskAssessment, patientName }
               icon={Activity}
             />
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Lifestyle Information Section */}
       {hasResults && preEvaluation.lifestyleInfo && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-card rounded-lg border border-border p-6"
-        >
+        <div className="bg-card rounded-lg border border-border p-6">
           <div className="flex items-center gap-2 mb-4">
             <Users className="h-5 w-5 text-primary" />
             <h3 className="font-semibold text-foreground">Lifestyle Information</h3>
@@ -315,17 +295,12 @@ export function PreEvalResultsTab({ preEvaluation, riskAssessment, patientName }
               icon={ClipboardCheck}
             />
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Verification Notes */}
       {preEvaluation.status === 'info_verified' && preEvaluation.verifiedBy && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="bg-card rounded-lg border border-border p-6"
-        >
+        <div className="bg-card rounded-lg border border-border p-6">
           <div className="flex items-center gap-2 mb-4">
             <MessageSquare className="h-5 w-5 text-primary" />
             <h3 className="font-semibold text-foreground">Verification Notes</h3>
@@ -338,7 +313,7 @@ export function PreEvalResultsTab({ preEvaluation, riskAssessment, patientName }
               <p className="text-emerald-700">{preEvaluation.verificationNotes}</p>
             )}
           </div>
-        </motion.div>
+        </div>
       )}
     </div>
   );

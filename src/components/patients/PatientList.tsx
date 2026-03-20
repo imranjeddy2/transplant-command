@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Filter, Search, Users } from 'lucide-react';
 import { patients, getRiskAssessmentByPatientId } from '@/data/mockData';
 import type { PatientStatus, RiskLevel } from '@/types';
@@ -94,17 +93,13 @@ export function PatientList() {
   return (
     <div className="p-8">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
+      <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
           <Users className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-semibold text-foreground">Patients</h1>
         </div>
         <p className="text-muted-foreground mt-1">View and manage transplant referral patients</p>
-      </motion.div>
+      </div>
 
       {/* Filter Bar */}
       <div className="bg-card rounded-xl shadow-sm border border-border p-4 mb-6">
@@ -165,7 +160,7 @@ export function PatientList() {
             </tr>
           </thead>
           <tbody>
-            {filteredPatients.map((patient, index) => {
+            {filteredPatients.map((patient) => {
               const serverState = serverStates[patient.id];
               const effectiveStatus = (serverState?.status as PatientStatus) ?? patient.status;
               const status = statusConfig[effectiveStatus] ?? statusConfig[patient.status];
@@ -174,11 +169,8 @@ export function PatientList() {
               const effectiveRisk = serverRiskLevel || riskAssessment?.overrideLevel || riskAssessment?.calculatedLevel;
 
               return (
-                <motion.tr
+                <tr
                   key={patient.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.03 }}
                   onClick={() => navigate(`/patients/${patient.id}`)}
                   className="border-b border-border last:border-0 cursor-pointer hover:bg-muted/50 transition-colors"
                 >
@@ -219,18 +211,14 @@ export function PatientList() {
                       {patient.referringProvider?.name || '—'}
                     </span>
                   </td>
-                </motion.tr>
+                </tr>
               );
             })}
           </tbody>
         </table>
 
         {filteredPatients.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="py-16 text-center"
-          >
+          <div className="py-16 text-center">
             <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Search className="h-8 w-8 text-primary/50" />
             </div>
@@ -240,7 +228,7 @@ export function PatientList() {
                 ? `No patients match "${searchQuery}". Try adjusting your search.`
                 : 'No patients match the selected filter. Try selecting "All Patients".'}
             </p>
-          </motion.div>
+          </div>
         )}
       </div>
 

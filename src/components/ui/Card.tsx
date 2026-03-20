@@ -1,7 +1,6 @@
-import { type ReactNode } from 'react';
-import { motion, type HTMLMotionProps } from 'framer-motion';
+import { type ReactNode, type HTMLAttributes } from 'react';
 
-interface CardProps extends Omit<HTMLMotionProps<'div'>, 'children'> {
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   variant?: 'default' | 'elevated' | 'interactive';
   padding?: 'none' | 'sm' | 'md' | 'lg';
@@ -9,8 +8,8 @@ interface CardProps extends Omit<HTMLMotionProps<'div'>, 'children'> {
 
 const variantClasses: Record<string, string> = {
   default: 'bg-card border border-border',
-  elevated: 'bg-card border border-border shadow-md shadow-black/5',
-  interactive: 'bg-card border border-border hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 cursor-pointer transition-all duration-200',
+  elevated: 'bg-card border border-border shadow-sm',
+  interactive: 'bg-card border border-border hover:border-border hover:shadow-sm cursor-pointer transition-shadow duration-150',
 };
 
 const paddingClasses: Record<string, string> = {
@@ -28,14 +27,12 @@ export function Card({
   ...props
 }: CardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`rounded-xl ${variantClasses[variant]} ${paddingClasses[padding]} ${className}`}
+    <div
+      className={`rounded-md ${variantClasses[variant]} ${paddingClasses[padding]} ${className}`}
       {...props}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -51,12 +48,12 @@ export function CardHeader({ title, subtitle, icon, action }: CardHeaderProps) {
     <div className="flex items-start justify-between mb-4">
       <div className="flex items-center gap-3">
         {icon && (
-          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+          <div className="p-2 rounded bg-primary/10 text-primary">
             {icon}
           </div>
         )}
         <div>
-          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+          <h3 className="text-base font-semibold text-foreground">{title}</h3>
           {subtitle && (
             <p className="text-sm text-muted-foreground">{subtitle}</p>
           )}
@@ -76,18 +73,14 @@ interface EmptyStateProps {
 
 export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center justify-center py-16 text-center"
-    >
-      <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl flex items-center justify-center mb-4">
-        <div className="text-primary">{icon}</div>
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <div className="w-12 h-12 bg-muted rounded flex items-center justify-center mb-4">
+        <div className="text-muted-foreground">{icon}</div>
       </div>
-      <h3 className="text-lg font-semibold text-foreground mb-1">{title}</h3>
-      <p className="text-muted-foreground mb-6 max-w-sm">{description}</p>
+      <h3 className="text-base font-semibold text-foreground mb-1">{title}</h3>
+      <p className="text-sm text-muted-foreground mb-6 max-w-sm">{description}</p>
       {action}
-    </motion.div>
+    </div>
   );
 }
 
@@ -102,10 +95,10 @@ interface StatCardProps {
 
 export function StatCard({ title, value, subtitle, icon, trend, color = 'primary' }: StatCardProps) {
   const colorClasses: Record<string, { bg: string; text: string }> = {
-    primary: { bg: 'bg-primary/10', text: 'text-primary' },
-    green: { bg: 'bg-green-100', text: 'text-green-600' },
-    amber: { bg: 'bg-amber-100', text: 'text-amber-600' },
-    blue: { bg: 'bg-blue-100', text: 'text-blue-600' },
+    primary: { bg: 'bg-blue-50', text: 'text-blue-600' },
+    green: { bg: 'bg-green-50', text: 'text-green-600' },
+    amber: { bg: 'bg-amber-50', text: 'text-amber-600' },
+    blue: { bg: 'bg-blue-50', text: 'text-blue-600' },
   };
 
   const colors = colorClasses[color] || colorClasses.primary;
@@ -115,7 +108,7 @@ export function StatCard({ title, value, subtitle, icon, trend, color = 'primary
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-3xl font-semibold text-foreground mt-2 tracking-tight">{value}</p>
+          <p className="text-2xl font-semibold text-foreground mt-1 tracking-tight">{value}</p>
           {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
           {trend && (
             <p
@@ -127,7 +120,7 @@ export function StatCard({ title, value, subtitle, icon, trend, color = 'primary
             </p>
           )}
         </div>
-        <div className={`p-3 rounded-xl ${colors.bg}`}>
+        <div className={`p-2.5 rounded ${colors.bg}`}>
           <div className={colors.text}>{icon}</div>
         </div>
       </div>

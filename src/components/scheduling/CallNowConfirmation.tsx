@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { Phone, Clock, Volume2, HelpCircle, CheckCircle2, PhoneCall, Loader2, ExternalLink } from 'lucide-react';
 import type { TransplantCenterConfig } from '@/config/transplantCenters';
 import { useCallStatus } from '@/hooks/useCallStatus';
@@ -136,43 +135,20 @@ export function CallNowConfirmation({ patientPhone, center, callId, patientId }:
 
   return (
     <div className="text-center space-y-8">
-      {/* Status Animation */}
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{
-          type: 'spring',
-          stiffness: 200,
-          damping: 15,
-          delay: 0.1,
-        }}
+      {/* Status Icon */}
+      <div
         className="inline-flex items-center justify-center w-20 h-20 rounded-full"
         style={{ backgroundColor: isCallEnded ? '#dcfce7' : `${center.primaryColor}15` }}
       >
         {isCallEnded ? (
           <CheckCircle2 className="h-10 w-10 text-green-600" />
         ) : (
-          <motion.div
-            animate={{
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-          >
-            <Phone className="h-10 w-10" style={{ color: center.primaryColor }} />
-          </motion.div>
+          <Phone className="h-10 w-10" style={{ color: center.primaryColor }} />
         )}
-      </motion.div>
+      </div>
 
       {/* Main Message */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
+      <div>
         {isCallEnded ? (
           <>
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
@@ -194,15 +170,10 @@ export function CallNowConfirmation({ patientPhone, center, callId, patientId }:
             </p>
           </>
         )}
-      </motion.div>
+      </div>
 
       {/* Call Status Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="bg-gray-50 rounded-xl p-6 text-left space-y-4"
-      >
+      <div className="bg-gray-50 rounded-xl p-6 text-left space-y-4">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-4">
             <div
@@ -240,16 +211,11 @@ export function CallNowConfirmation({ patientPhone, center, callId, patientId }:
             </div>
           </div>
         )}
-      </motion.div>
+      </div>
 
       {/* Tips (show when call not ended) */}
       {!isCallEnded && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-blue-50 border border-blue-200 rounded-xl p-5 text-left"
-        >
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 text-left">
           <div className="flex items-center gap-2 mb-3">
             <Volume2 className="h-5 w-5 text-blue-600" />
             <h3 className="font-semibold text-blue-900">Tips for your call</h3>
@@ -260,17 +226,12 @@ export function CallNowConfirmation({ patientPhone, center, callId, patientId }:
             <li>• The call will take about 15-20 minutes</li>
             <li>• Answer any incoming call from an unknown number</li>
           </ul>
-        </motion.div>
+        </div>
       )}
 
       {/* Success Message (show when call ended) */}
       {isCallEnded && dataUpdated && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-green-50 border border-green-200 rounded-xl p-5 text-left"
-        >
+        <div className="bg-green-50 border border-green-200 rounded-xl p-5 text-left">
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle2 className="h-5 w-5 text-green-600" />
             <h3 className="font-semibold text-green-900">Information Captured</h3>
@@ -287,29 +248,20 @@ export function CallNowConfirmation({ patientPhone, center, callId, patientId }:
             View your pre-evaluation results
             <ExternalLink className="h-4 w-4" />
           </a>
-        </motion.div>
+        </div>
       )}
 
       {/* Error message */}
       {error && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-red-50 border border-red-200 rounded-xl p-5 text-left"
-        >
+        <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-left">
           <p className="text-sm text-red-800">
             {error.message || 'An error occurred. Please try again.'}
           </p>
-        </motion.div>
+        </div>
       )}
 
       {/* Help section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="flex items-start gap-3 text-left bg-white border border-gray-200 rounded-xl p-4"
-      >
+      <div className="flex items-start gap-3 text-left bg-white border border-gray-200 rounded-xl p-4">
         <HelpCircle className="h-5 w-5 text-gray-400 flex-shrink-0 mt-0.5" />
         <div>
           <p className="text-sm text-gray-600">
@@ -324,7 +276,7 @@ export function CallNowConfirmation({ patientPhone, center, callId, patientId }:
             </a>
           </p>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

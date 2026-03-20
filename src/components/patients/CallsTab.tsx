@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Phone, Clock, User, ChevronDown, ChevronUp, Calendar, FileText } from 'lucide-react';
 import type { PatientCall } from '@/types';
 import { getCallsByPatientId } from '@/data/mockData';
@@ -62,11 +61,7 @@ function CallCard({ call }: { call: PatientCall }) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-card rounded-xl border border-border overflow-hidden"
-    >
+    <div className="bg-card rounded-xl border border-border overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-start justify-between">
@@ -140,44 +135,36 @@ function CallCard({ call }: { call: PatientCall }) {
             )}
           </button>
 
-          <AnimatePresence>
-            {isExpanded && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <div className="px-4 pb-4">
-                  <div className="bg-muted/20 rounded-lg p-4 max-h-96 overflow-y-auto">
-                    <pre className="text-sm text-foreground whitespace-pre-wrap font-mono leading-relaxed">
-                      {call.transcript.split('\n').map((line, index) => {
-                        const isCoordinator = line.startsWith('Coordinator:');
-                        const isPatient = line.startsWith('Patient:');
+          {isExpanded && (
+            <div className="overflow-hidden">
+              <div className="px-4 pb-4">
+                <div className="bg-muted/20 rounded-lg p-4 max-h-96 overflow-y-auto">
+                  <pre className="text-sm text-foreground whitespace-pre-wrap font-mono leading-relaxed">
+                    {call.transcript.split('\n').map((line, index) => {
+                      const isCoordinator = line.startsWith('Coordinator:');
+                      const isPatient = line.startsWith('Patient:');
 
-                        if (isCoordinator || isPatient) {
-                          const [speaker, ...rest] = line.split(':');
-                          return (
-                            <div key={index} className="mb-2">
-                              <span className={`font-semibold ${isCoordinator ? 'text-primary' : 'text-green-600'}`}>
-                                {speaker}:
-                              </span>
-                              <span className="text-foreground">{rest.join(':')}</span>
-                            </div>
-                          );
-                        }
-                        return line ? <div key={index} className="mb-2 text-muted-foreground">{line}</div> : <div key={index} className="h-2" />;
-                      })}
-                    </pre>
-                  </div>
+                      if (isCoordinator || isPatient) {
+                        const [speaker, ...rest] = line.split(':');
+                        return (
+                          <div key={index} className="mb-2">
+                            <span className={`font-semibold ${isCoordinator ? 'text-primary' : 'text-green-600'}`}>
+                              {speaker}:
+                            </span>
+                            <span className="text-foreground">{rest.join(':')}</span>
+                          </div>
+                        );
+                      }
+                      return line ? <div key={index} className="mb-2 text-muted-foreground">{line}</div> : <div key={index} className="h-2" />;
+                    })}
+                  </pre>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </div>
+            </div>
+          )}
         </>
       )}
-    </motion.div>
+    </div>
   );
 }
 
@@ -232,15 +219,10 @@ export function CallsTab({ patientId, patientName }: CallsTabProps) {
 
   return (
     <div className="space-y-4">
-      {calls.map((call, index) => (
-        <motion.div
-          key={call.id}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
-        >
+      {calls.map((call) => (
+        <div key={call.id}>
           <CallCard call={call} />
-        </motion.div>
+        </div>
       ))}
     </div>
   );

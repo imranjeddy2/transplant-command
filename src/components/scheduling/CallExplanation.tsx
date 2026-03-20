@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { PhoneCall, Clock, MessageSquare, ClipboardList, Shield, ChevronDown } from 'lucide-react';
 
 interface ExplanationItem {
@@ -58,21 +57,13 @@ function ExplanationSection({ item, isOpen, onToggle }: { item: ExplanationItem;
           className={`h-5 w-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="px-4 pb-4 pl-[4.25rem]">
-              <p className="text-gray-600 leading-relaxed">{item.content}</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {isOpen && (
+        <div className="overflow-hidden">
+          <div className="px-4 pb-4 pl-[4.25rem]">
+            <p className="text-gray-600 leading-relaxed">{item.content}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -85,12 +76,7 @@ export function CallExplanation() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 }}
-      className="space-y-3"
-    >
+    <div className="space-y-3">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         About Your Pre-Evaluation Call
       </h3>
@@ -102,6 +88,6 @@ export function CallExplanation() {
           onToggle={() => handleToggle(index)}
         />
       ))}
-    </motion.div>
+    </div>
   );
 }

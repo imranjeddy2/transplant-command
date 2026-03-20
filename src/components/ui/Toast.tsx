@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 
 type ToastType = 'success' | 'error' | 'info';
@@ -65,37 +64,31 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
       {/* Toast Container */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
-        <AnimatePresence>
-          {toasts.map((toast) => {
-            const config = toastConfig[toast.type];
-            const Icon = config.icon;
+        {toasts.map((toast) => {
+          const config = toastConfig[toast.type];
+          const Icon = config.icon;
 
-            return (
-              <motion.div
-                key={toast.id}
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 100, scale: 0.95 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                className={`flex items-start gap-3 p-4 rounded-xl border shadow-lg max-w-sm ${config.colors}`}
+          return (
+            <div
+              key={toast.id}
+              className={`flex items-start gap-3 p-4 rounded-xl border shadow-lg max-w-sm ${config.colors}`}
+            >
+              <Icon className="h-5 w-5 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium">{toast.title}</p>
+                {toast.description && (
+                  <p className="text-sm opacity-80 mt-0.5">{toast.description}</p>
+                )}
+              </div>
+              <button
+                onClick={() => removeToast(toast.id)}
+                className="p-1 hover:bg-black/10 rounded transition-colors"
               >
-                <Icon className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium">{toast.title}</p>
-                  {toast.description && (
-                    <p className="text-sm opacity-80 mt-0.5">{toast.description}</p>
-                  )}
-                </div>
-                <button
-                  onClick={() => removeToast(toast.id)}
-                  className="p-1 hover:bg-black/10 rounded transition-colors"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          );
+        })}
       </div>
     </ToastContext.Provider>
   );

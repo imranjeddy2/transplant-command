@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronUp, Edit2, Shield, TrendingUp, Clock, User, Info } from 'lucide-react';
 import type { RiskAssessment, RiskLevel, RiskFactorCategory, RiskFactor } from '@/types';
 import { RiskBadge } from './RiskBadge';
@@ -119,30 +118,22 @@ function ConfidenceTooltip({
         <Info className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
       </button>
 
-      <AnimatePresence>
-        {isVisible && (
-          <motion.div
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 5 }}
-            transition={{ duration: 0.15 }}
-            className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72"
-          >
-            <div className="bg-popover border border-border rounded-lg shadow-lg p-3">
-              <p className="text-xs font-medium text-foreground mb-1.5">
-                Why {confidenceScore}% confidence?
-              </p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {generateConfidenceExplanation(confidenceScore, factors)}
-              </p>
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full">
-                <div className="border-8 border-transparent border-t-border" />
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 border-[7px] border-transparent border-t-popover" />
-              </div>
+      {isVisible && (
+        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72">
+          <div className="bg-popover border border-border rounded-lg shadow-lg p-3">
+            <p className="text-xs font-medium text-foreground mb-1.5">
+              Why {confidenceScore}% confidence?
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {generateConfidenceExplanation(confidenceScore, factors)}
+            </p>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full">
+              <div className="border-8 border-transparent border-t-border" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 border-[7px] border-transparent border-t-popover" />
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -192,11 +183,7 @@ export function RiskAssessmentPanel({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-card rounded-xl border border-border overflow-hidden"
-    >
+    <div className="bg-card rounded-xl border border-border overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-start justify-between">
@@ -307,56 +294,48 @@ export function RiskAssessmentPanel({
           )}
         </button>
 
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <div className="p-4 pt-0 space-y-4">
-                {Object.entries(factorsByCategory).map(([category, factors]) => (
-                  <div key={category}>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                      {categoryLabels[category as RiskFactorCategory]}
-                    </h4>
-                    <div className="space-y-2">
-                      {factors.map((factor) => (
-                        <div
-                          key={factor.id}
-                          className="p-3 bg-muted/30 rounded-lg border border-border/50"
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-foreground">
-                                {factor.name}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {factor.value}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1 italic">
-                                {factor.description}
-                              </p>
-                            </div>
-                            <div className={`text-sm font-semibold ${
-                              factor.points > 0 ? 'text-red-500' :
-                              factor.points < 0 ? 'text-green-500' :
-                              'text-muted-foreground'
-                            }`}>
-                              {factor.points > 0 ? '+' : ''}{factor.points}
-                            </div>
+        {isExpanded && (
+          <div className="overflow-hidden">
+            <div className="p-4 pt-0 space-y-4">
+              {Object.entries(factorsByCategory).map(([category, factors]) => (
+                <div key={category}>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                    {categoryLabels[category as RiskFactorCategory]}
+                  </h4>
+                  <div className="space-y-2">
+                    {factors.map((factor) => (
+                      <div
+                        key={factor.id}
+                        className="p-3 bg-muted/30 rounded-lg border border-border/50"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-foreground">
+                              {factor.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {factor.value}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1 italic">
+                              {factor.description}
+                            </p>
+                          </div>
+                          <div className={`text-sm font-semibold ${
+                            factor.points > 0 ? 'text-red-500' :
+                            factor.points < 0 ? 'text-green-500' :
+                            'text-muted-foreground'
+                          }`}>
+                            {factor.points > 0 ? '+' : ''}{factor.points}
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Actions */}
@@ -378,6 +357,6 @@ export function RiskAssessmentPanel({
         currentLevel={effectiveLevel}
         patientName={patientName}
       />
-    </motion.div>
+    </div>
   );
 }

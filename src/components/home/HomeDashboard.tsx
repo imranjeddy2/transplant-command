@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { AlertCircle, Clock, Calendar, ArrowRight, Sparkles } from 'lucide-react';
 import { tasks, getAllPreEvaluations } from '@/data/mockData';
 import { useUser } from '@/context';
@@ -44,10 +43,7 @@ function StatCard({ title, count, subtitle, icon: Icon, color, onClick }: StatCa
   const classes = colorClasses[color];
 
   return (
-    <motion.button
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+    <button
       onClick={onClick}
       className="relative bg-card rounded-xl border border-border p-6 text-left hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 w-full overflow-hidden group"
     >
@@ -62,7 +58,7 @@ function StatCard({ title, count, subtitle, icon: Icon, color, onClick }: StatCa
           <Icon className={`h-6 w-6 ${classes.text}`} />
         </div>
       </div>
-    </motion.button>
+    </button>
   );
 }
 
@@ -72,7 +68,7 @@ interface ActionItemProps {
   onClick: () => void;
 }
 
-function ActionItem({ task, index, onClick }: ActionItemProps) {
+function ActionItem({ task, onClick }: ActionItemProps) {
   const statusConfig = {
     review_needed: { icon: AlertCircle, color: 'text-primary' },
     in_progress: { icon: Clock, color: 'text-blue-500' },
@@ -82,10 +78,7 @@ function ActionItem({ task, index, onClick }: ActionItemProps) {
   const Icon = config.icon;
 
   return (
-    <motion.button
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
+    <button
       onClick={onClick}
       className="w-full flex items-center gap-4 p-4 bg-muted/30 hover:bg-muted/50 rounded-lg transition-colors text-left"
     >
@@ -97,7 +90,7 @@ function ActionItem({ task, index, onClick }: ActionItemProps) {
       <span className="text-xs text-muted-foreground flex-shrink-0">
         {formatTimeAgo(task.createdAt)}
       </span>
-    </motion.button>
+    </button>
   );
 }
 
@@ -116,27 +109,17 @@ export function HomeDashboard() {
   return (
     <div className="p-8">
       {/* Greeting */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
+      <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <h1 className="text-2xl font-semibold text-foreground">
             {getGreeting()}, {user.firstName}
           </h1>
-          <motion.div
-            initial={{ rotate: -20, scale: 0 }}
-            animate={{ rotate: 0, scale: 1 }}
-            transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
-          >
-            <Sparkles className="h-5 w-5 text-primary" />
-          </motion.div>
+          <Sparkles className="h-5 w-5 text-primary" />
         </div>
         <p className="text-muted-foreground">
           Here's what needs your attention today
         </p>
-      </motion.div>
+      </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -170,12 +153,7 @@ export function HomeDashboard() {
       <div className="space-y-6">
         {/* Review Needed Section */}
         {reviewNeededTasks.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-card rounded-xl border border-border p-6"
-          >
+          <div className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-foreground">Needs Your Review</h2>
               <button
@@ -196,17 +174,12 @@ export function HomeDashboard() {
                 />
               ))}
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* In Progress Section */}
         {inProgressTasks.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-card rounded-xl border border-border p-6"
-          >
+          <div className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-foreground">In Progress</h2>
               <button
@@ -227,17 +200,12 @@ export function HomeDashboard() {
                 />
               ))}
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* Scheduled Pre-Evals Section */}
         {scheduledPreEvals.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-card rounded-xl border border-border p-6"
-          >
+          <div className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-foreground">Upcoming Pre-Evaluation Calls</h2>
               <button
@@ -249,12 +217,9 @@ export function HomeDashboard() {
               </button>
             </div>
             <div className="space-y-2">
-              {scheduledPreEvals.slice(0, 3).map((preEval, index) => (
-                <motion.div
+              {scheduledPreEvals.slice(0, 3).map((preEval) => (
+                <div
                   key={preEval.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
                   className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg"
                 >
                   <Calendar className="h-5 w-5 text-amber-500 flex-shrink-0" />
@@ -264,10 +229,10 @@ export function HomeDashboard() {
                       Scheduled: {new Date(preEval.scheduledCallTime!).toLocaleString()}
                     </p>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
     </div>

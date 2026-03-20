@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import {
   ArrowLeft,
   ChevronLeft,
@@ -74,11 +73,8 @@ function JourneyTimeline({ steps }: { steps: JourneyStep[] }) {
         const hasSubSteps = step.subSteps && step.subSteps.length > 0;
 
         return (
-          <motion.div
+          <div
             key={step.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
             className="relative"
           >
             {/* Connector Line */}
@@ -132,12 +128,7 @@ function JourneyTimeline({ steps }: { steps: JourneyStep[] }) {
 
                 {/* Sub-steps */}
                 {hasSubSteps && isExpanded && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mt-3 pl-4 border-l-2 border-gray-200 space-y-2"
-                  >
+                  <div className="mt-3 pl-4 border-l-2 border-gray-200 space-y-2">
                     {step.subSteps!.map((subStep) => (
                       <div key={subStep.id} className="flex items-center gap-2 text-sm">
                         {subStep.aiCompleted && (
@@ -146,11 +137,11 @@ function JourneyTimeline({ steps }: { steps: JourneyStep[] }) {
                         <span className="text-muted-foreground">{subStep.title}</span>
                       </div>
                     ))}
-                  </motion.div>
+                  </div>
                 )}
               </div>
             </div>
-          </motion.div>
+          </div>
         );
       })}
     </div>
