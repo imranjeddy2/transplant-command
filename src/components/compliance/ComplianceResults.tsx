@@ -266,25 +266,35 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
                 alt="Creative"
                 className="w-full rounded border border-border"
               />
-              {/* Issue markers — only for unfixed issues */}
-              {result.issues.filter(i => !appliedFixes.has(i.id)).map((issue) => {
-                const pos = MARKER_CSS_POSITIONS[issue.locationHint || 'center'];
-                return (
-                  <button
-                    key={issue.id}
-                    onClick={() => setSelectedIssue(selectedIssue === issue.id ? null : issue.id)}
-                    className={`absolute ${pos} w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center cursor-pointer transition-all hover:scale-110 ${
-                      issue.severity === 'high'
-                        ? 'bg-red-500 text-white'
-                        : issue.severity === 'medium'
-                        ? 'bg-amber-500 text-white'
-                        : 'bg-blue-500 text-white'
-                    } ${selectedIssue === issue.id ? 'ring-2 ring-offset-2 ring-foreground scale-110' : ''}`}
-                  >
-                    {issue.id}
-                  </button>
-                );
-              })}
+              {/* Issue markers — only for unfixed issues, offset when overlapping */}
+              {(() => {
+                const unfixed = result.issues.filter(i => !appliedFixes.has(i.id));
+                const hintCounts: Record<string, number> = {};
+                return unfixed.map((issue) => {
+                  const hint = issue.locationHint || 'center';
+                  const idx = hintCounts[hint] || 0;
+                  hintCounts[hint] = idx + 1;
+                  const pos = MARKER_CSS_POSITIONS[hint];
+                  // Offset overlapping markers horizontally
+                  const offsetPx = idx * 30;
+                  return (
+                    <button
+                      key={issue.id}
+                      onClick={() => setSelectedIssue(selectedIssue === issue.id ? null : issue.id)}
+                      style={offsetPx > 0 ? { marginLeft: `${offsetPx}px` } : undefined}
+                      className={`absolute ${pos} w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center cursor-pointer transition-all hover:scale-110 ${
+                        issue.severity === 'high'
+                          ? 'bg-red-500 text-white'
+                          : issue.severity === 'medium'
+                          ? 'bg-amber-500 text-white'
+                          : 'bg-blue-500 text-white'
+                      } ${selectedIssue === issue.id ? 'ring-2 ring-offset-2 ring-foreground scale-110' : ''}`}
+                    >
+                      {issue.id}
+                    </button>
+                  );
+                });
+              })()}
             </div>
           </div>
 

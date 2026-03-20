@@ -23,7 +23,7 @@ export async function editImageText(
   const prompt = `Edit this image: find the text "${originalText}" and replace it with "${replacementText}". Keep everything else exactly the same — same layout, colors, fonts, background, images, and design. Only change the specified text. The replacement text should match the original text's style, size, color, and position as closely as possible.`;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash-exp',
+    model: 'gemini-2.5-flash-image',
     contents: [
       {
         role: 'user',
