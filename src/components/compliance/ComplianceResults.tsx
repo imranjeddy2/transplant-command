@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import type { ComplianceAnalysisResult, ComplianceIssue, RiskCategory } from './types';
 
 const SEVERITY_STYLES: Record<string, string> = {
@@ -45,13 +45,6 @@ const MARKER_CSS_POSITIONS: Record<string, string> = {
   'bottom-right': 'bottom-[8%] right-[8%]',
 };
 
-const FONT_SIZE_MAP: Record<string, number> = {
-  small: 0.015,
-  medium: 0.022,
-  large: 0.035,
-  xlarge: 0.05,
-};
-
 function ScoreBar({ score, max = 5 }: { score: number; max?: number }) {
   return (
     <div className="flex gap-1">
@@ -77,9 +70,10 @@ interface ComplianceResultsProps {
 export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) {
   const [selectedIssue, setSelectedIssue] = useState<number | null>(null);
   const [appliedFixes, setAppliedFixes] = useState<Set<number>>(new Set());
-  const [editedImageUrl, setEditedImageUrl] = useState<string>(imageUrl);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imageRef = useRef<HTMLImageElement | null>(null);
+  const [editingIssueId, setEditingIssueId] = useState<number | null>(null);
+  // Track the current image — starts as original, updated after each Gemini edit
+  const [currentImageUrl, setCurrentImageUrl] = useState<string>(imageUrl);
+  const [editError, setEditError] = useState<string | null>(null);
 
   const compliance = COMPLIANCE_LABELS[result.complianceScore] || COMPLIANCE_LABELS[3];
   const clarity = CLARITY_LABELS[result.clarityScore] || CLARITY_LABELS[3];
@@ -95,144 +89,49 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
     }
   });
 
-  useEffect(() => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => { imageRef.current = img; };
-    img.src = imageUrl;
-  }, [imageUrl]);
+  const handleUseFix = async (issue: ComplianceIssue) => {
+    if (appliedFixes.has(issue.id)) return; // Already applied
 
-  const renderCanvas = useCallback((fixIds: Set<number>) => {
-    const canvas = canvasRef.current;
-    const img = imageRef.current;
-    if (!canvas || !img) return;
+    setEditingIssueId(issue.id);
+    setEditError(null);
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    try {
+      const response = await fetch('/api/compliance/edit-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: currentImageUrl,
+          originalText: issue.excerpt,
+          replacementText: issue.proposedPhrase,
+        }),
+      });
 
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    ctx.drawImage(img, 0, 0);
-
-    fixIds.forEach(fixId => {
-      const issue = result.issues.find(i => i.id === fixId);
-      if (!issue || !issue.proposedPhrase) return;
-
-      const bb = issue.boundingBox;
-      const style = issue.textStyle;
-
-      if (bb) {
-        // Use precise bounding box and style from LLM
-        const boxX = bb.x * canvas.width;
-        const boxY = bb.y * canvas.height;
-        const boxW = bb.width * canvas.width;
-        const boxH = bb.height * canvas.height;
-
-        const bgColor = style?.backgroundColor || '#FFFFFF';
-        const textColor = style?.textColor || '#000000';
-        const fontSizeRatio = FONT_SIZE_MAP[style?.fontSize || 'medium'] || 0.022;
-        const fontSize = Math.max(12, Math.round(canvas.width * fontSizeRatio));
-        const weight = style?.fontWeight === 'bold' ? 'bold' : 'normal';
-        const align = style?.textAlign || 'center';
-
-        // Paint over original text with background color
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(boxX, boxY, boxW, boxH);
-
-        // Render replacement text
-        ctx.font = `${weight} ${fontSize}px Inter, Arial, sans-serif`;
-        ctx.fillStyle = textColor;
-        ctx.textBaseline = 'top';
-
-        const padding = fontSize * 0.4;
-        const maxTextWidth = boxW - padding * 2;
-        const lines = wrapText(ctx, issue.proposedPhrase, maxTextWidth);
-        const lineHeight = fontSize * 1.25;
-        const totalTextHeight = lines.length * lineHeight;
-
-        // Vertically center the text in the box
-        const startY = boxY + (boxH - totalTextHeight) / 2;
-
-        lines.forEach((line, idx) => {
-          let textX: number;
-          if (align === 'center') {
-            const lineWidth = ctx.measureText(line).width;
-            textX = boxX + (boxW - lineWidth) / 2;
-          } else if (align === 'right') {
-            const lineWidth = ctx.measureText(line).width;
-            textX = boxX + boxW - padding - lineWidth;
-          } else {
-            textX = boxX + padding;
-          }
-          ctx.fillText(line, textX, startY + idx * lineHeight);
-        });
-      } else {
-        // Fallback: use locationHint with overlay box
-        const posMap: Record<string, { x: number; y: number }> = {
-          'top-left': { x: 0.12, y: 0.1 },
-          'top-center': { x: 0.5, y: 0.1 },
-          'top-right': { x: 0.88, y: 0.1 },
-          'center-left': { x: 0.12, y: 0.5 },
-          'center': { x: 0.5, y: 0.5 },
-          'center-right': { x: 0.88, y: 0.5 },
-          'bottom-left': { x: 0.12, y: 0.88 },
-          'bottom-center': { x: 0.5, y: 0.88 },
-          'bottom-right': { x: 0.88, y: 0.88 },
-        };
-        const pos = posMap[issue.locationHint || 'center'];
-        const x = pos.x * canvas.width;
-        const y = pos.y * canvas.height;
-        const fontSize = Math.max(14, Math.min(canvas.width * 0.022, 28));
-        ctx.font = `bold ${fontSize}px Inter, Arial, sans-serif`;
-
-        const fLines = wrapText(ctx, issue.proposedPhrase, canvas.width * 0.35);
-        const fLineHeight = fontSize * 1.3;
-        const blockH = fLines.length * fLineHeight + 16;
-        const maxW = Math.max(...fLines.map(l => ctx.measureText(l).width));
-        const blockW = maxW + 24;
-        const bx = Math.max(4, Math.min(x - blockW / 2, canvas.width - blockW - 4));
-        const by = Math.max(4, Math.min(y - blockH / 2, canvas.height - blockH - 4));
-
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-        roundRect(ctx, bx, by, blockW, blockH, 6);
-        ctx.fill();
-        ctx.fillStyle = '#16a34a';
-        roundRect(ctx, bx, by, 4, blockH, 2);
-        ctx.fill();
-        ctx.fillStyle = '#15803d';
-        fLines.forEach((line, idx) => {
-          ctx.fillText(line, bx + 14, by + 12 + (idx + 1) * fLineHeight - 4);
-        });
+      if (!response.ok) {
+        throw new Error(`Edit failed (${response.status})`);
       }
-    });
 
-    setEditedImageUrl(canvas.toDataURL('image/png'));
-  }, [result.issues]);
-
-  const handleUseFix = (issueId: number) => {
-    const newFixes = new Set(appliedFixes);
-    if (newFixes.has(issueId)) {
-      newFixes.delete(issueId);
-    } else {
-      newFixes.add(issueId);
+      const data = await response.json();
+      setCurrentImageUrl(data.editedImage);
+      setAppliedFixes(prev => new Set([...prev, issue.id]));
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : 'Failed to edit image');
+    } finally {
+      setEditingIssueId(null);
     }
-    setAppliedFixes(newFixes);
+  };
 
-    if (newFixes.size === 0) {
-      setEditedImageUrl(imageUrl);
-    } else {
-      renderCanvas(newFixes);
-    }
+  const handleReset = () => {
+    setCurrentImageUrl(imageUrl);
+    setAppliedFixes(new Set());
+    setEditError(null);
   };
 
   const handleDownload = () => {
     const link = document.createElement('a');
     link.download = 'compliance-fixed-creative.png';
-    link.href = editedImageUrl;
+    link.href = currentImageUrl;
     link.click();
   };
-
-  const displayUrl = appliedFixes.size > 0 ? editedImageUrl : imageUrl;
 
   return (
     <div className="space-y-5">
@@ -311,7 +210,7 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
       {appliedFixes.size > 0 && (
         <div className="bg-green-50 border border-green-200 rounded-md px-4 py-2.5 flex items-center justify-between">
           <p className="text-sm text-green-700">
-            <span className="font-medium">{appliedFixes.size} fix{appliedFixes.size !== 1 ? 'es' : ''}</span> applied to preview
+            <span className="font-medium">{appliedFixes.size} fix{appliedFixes.size !== 1 ? 'es' : ''}</span> applied to image
           </p>
           <div className="flex gap-3">
             <button
@@ -321,12 +220,19 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
               Download edited image
             </button>
             <button
-              onClick={() => { setAppliedFixes(new Set()); setEditedImageUrl(imageUrl); }}
+              onClick={handleReset}
               className="text-xs text-green-700 hover:text-green-900 font-medium underline"
             >
-              Reset all
+              Reset to original
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Edit error */}
+      {editError && (
+        <div className="bg-red-50 border border-red-200 rounded-md px-4 py-2.5">
+          <p className="text-sm text-red-700">Image edit failed: {editError}</p>
         </div>
       )}
 
@@ -336,7 +242,9 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
           {/* Image with markers */}
           <div className="col-span-3 bg-card border border-border rounded-md p-4">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium text-foreground">Creative Preview</p>
+              <p className="text-sm font-medium text-foreground">
+                {appliedFixes.size > 0 ? 'Edited Creative' : 'Creative Preview'}
+              </p>
               {appliedFixes.size > 0 && (
                 <span className="text-xs text-green-600 font-medium">
                   {appliedFixes.size} fix{appliedFixes.size !== 1 ? 'es' : ''} applied
@@ -344,12 +252,21 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
               )}
             </div>
             <div className="relative inline-block w-full">
+              {/* Show loading overlay when editing */}
+              {editingIssueId !== null && (
+                <div className="absolute inset-0 bg-white/70 rounded border border-border flex items-center justify-center z-10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <p className="text-sm font-medium text-foreground">Editing image...</p>
+                  </div>
+                </div>
+              )}
               <img
-                src={displayUrl}
-                alt="Uploaded creative"
+                src={currentImageUrl}
+                alt="Creative"
                 className="w-full rounded border border-border"
               />
-              {/* Issue markers — only show for unfixed issues */}
+              {/* Issue markers — only for unfixed issues */}
               {result.issues.filter(i => !appliedFixes.has(i.id)).map((issue) => {
                 const pos = MARKER_CSS_POSITIONS[issue.locationHint || 'center'];
                 return (
@@ -369,8 +286,6 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
                 );
               })}
             </div>
-            {/* Hidden canvas */}
-            <canvas ref={canvasRef} className="hidden" />
           </div>
 
           {/* Issues Panel */}
@@ -378,6 +293,7 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
             <p className="text-sm font-medium text-foreground">Issues ({result.issues.length})</p>
             {result.issues.map((issue: ComplianceIssue) => {
               const isFixed = appliedFixes.has(issue.id);
+              const isEditing = editingIssueId === issue.id;
               const riskStyle = RISK_CATEGORY_STYLES[issue.riskCategory] || { bg: 'bg-gray-50', text: 'text-gray-600' };
 
               return (
@@ -406,6 +322,9 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
                         {issue.riskCategory}
                       </span>
                     )}
+                    {isFixed && (
+                      <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700">Fixed</span>
+                    )}
                   </div>
 
                   <p className="text-xs text-muted-foreground mb-1">{issue.udaapReference}</p>
@@ -430,19 +349,28 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
                           <p className="text-xs text-green-700 font-medium mb-0.5">Proposed replacement</p>
                           <p className="text-sm text-green-800">&ldquo;{issue.proposedPhrase}&rdquo;</p>
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleUseFix(issue.id);
-                          }}
-                          className={`flex-shrink-0 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                            isFixed
-                              ? 'bg-green-600 text-white hover:bg-green-700'
-                              : 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-300'
-                          }`}
-                        >
-                          {isFixed ? 'Undo' : 'Use'}
-                        </button>
+                        {!isFixed && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUseFix(issue);
+                            }}
+                            disabled={isEditing || editingIssueId !== null}
+                            className="flex-shrink-0 px-3 py-1.5 rounded text-xs font-medium transition-colors bg-green-100 text-green-700 hover:bg-green-200 border border-green-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isEditing ? (
+                              <span className="flex items-center gap-1.5">
+                                <span className="w-3 h-3 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+                                Editing...
+                              </span>
+                            ) : 'Use'}
+                          </button>
+                        )}
+                        {isFixed && (
+                          <span className="flex-shrink-0 px-3 py-1.5 rounded text-xs font-medium bg-green-600 text-white">
+                            Applied
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
@@ -459,37 +387,4 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
       )}
     </div>
   );
-}
-
-// Canvas helpers
-function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
-  const words = text.split(' ');
-  const lines: string[] = [];
-  let current = '';
-
-  for (const word of words) {
-    const test = current ? `${current} ${word}` : word;
-    if (ctx.measureText(test).width > maxWidth && current) {
-      lines.push(current);
-      current = word;
-    } else {
-      current = test;
-    }
-  }
-  if (current) lines.push(current);
-  return lines;
-}
-
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
 }
