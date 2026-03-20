@@ -33,18 +33,6 @@ const CLARITY_LABELS: Record<number, { label: string; color: string; bg: string 
   5: { label: 'Very Clear', color: 'text-green-700', bg: 'bg-green-50' },
 };
 
-const POSITION_MAP: Record<string, { x: number; y: number }> = {
-  'top-left': { x: 0.12, y: 0.1 },
-  'top-center': { x: 0.5, y: 0.1 },
-  'top-right': { x: 0.88, y: 0.1 },
-  'center-left': { x: 0.12, y: 0.5 },
-  'center': { x: 0.5, y: 0.5 },
-  'center-right': { x: 0.88, y: 0.5 },
-  'bottom-left': { x: 0.12, y: 0.88 },
-  'bottom-center': { x: 0.5, y: 0.88 },
-  'bottom-right': { x: 0.88, y: 0.88 },
-};
-
 const MARKER_CSS_POSITIONS: Record<string, string> = {
   'top-left': 'top-[8%] left-[8%]',
   'top-center': 'top-[8%] left-1/2 -translate-x-1/2',
@@ -55,6 +43,13 @@ const MARKER_CSS_POSITIONS: Record<string, string> = {
   'bottom-left': 'bottom-[8%] left-[8%]',
   'bottom-center': 'bottom-[8%] left-1/2 -translate-x-1/2',
   'bottom-right': 'bottom-[8%] right-[8%]',
+};
+
+const FONT_SIZE_MAP: Record<string, number> = {
+  small: 0.015,
+  medium: 0.022,
+  large: 0.035,
+  xlarge: 0.05,
 };
 
 function ScoreBar({ score, max = 5 }: { score: number; max?: number }) {
@@ -93,7 +88,6 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
   const mediumCount = result.issues.filter(i => i.severity === 'medium').length;
   const lowCount = result.issues.filter(i => i.severity === 'low').length;
 
-  // Count risk categories
   const riskCategoryCounts: Partial<Record<RiskCategory, number>> = {};
   result.issues.forEach(i => {
     if (i.riskCategory) {
@@ -101,7 +95,6 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
     }
   });
 
-  // Load the image for canvas operations
   useEffect(() => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -121,44 +114,96 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
     canvas.height = img.naturalHeight;
     ctx.drawImage(img, 0, 0);
 
-    // Apply all fixes
     fixIds.forEach(fixId => {
       const issue = result.issues.find(i => i.id === fixId);
-      if (!issue) return;
+      if (!issue || !issue.proposedPhrase) return;
 
-      const pos = POSITION_MAP[issue.locationHint || 'center'];
-      const x = pos.x * canvas.width;
-      const y = pos.y * canvas.height;
+      const bb = issue.boundingBox;
+      const style = issue.textStyle;
 
-      const fontSize = Math.max(14, Math.min(canvas.width * 0.022, 28));
-      ctx.font = `bold ${fontSize}px Inter, system-ui, sans-serif`;
+      if (bb) {
+        // Use precise bounding box and style from LLM
+        const boxX = bb.x * canvas.width;
+        const boxY = bb.y * canvas.height;
+        const boxW = bb.width * canvas.width;
+        const boxH = bb.height * canvas.height;
 
-      const lines = wrapText(ctx, issue.proposedPhrase, canvas.width * 0.35);
-      const lineHeight = fontSize * 1.3;
-      const blockHeight = lines.length * lineHeight + 16;
-      const maxLineWidth = Math.max(...lines.map(l => ctx.measureText(l).width));
-      const blockWidth = maxLineWidth + 24;
+        const bgColor = style?.backgroundColor || '#FFFFFF';
+        const textColor = style?.textColor || '#000000';
+        const fontSizeRatio = FONT_SIZE_MAP[style?.fontSize || 'medium'] || 0.022;
+        const fontSize = Math.max(12, Math.round(canvas.width * fontSizeRatio));
+        const weight = style?.fontWeight === 'bold' ? 'bold' : 'normal';
+        const align = style?.textAlign || 'center';
 
-      // Position the box centered on the location hint
-      const boxX = Math.max(4, Math.min(x - blockWidth / 2, canvas.width - blockWidth - 4));
-      const boxY = Math.max(4, Math.min(y - blockHeight / 2, canvas.height - blockHeight - 4));
+        // Paint over original text with background color
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(boxX, boxY, boxW, boxH);
 
-      // Draw background
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-      roundRect(ctx, boxX, boxY, blockWidth, blockHeight, 6);
-      ctx.fill();
+        // Render replacement text
+        ctx.font = `${weight} ${fontSize}px Inter, Arial, sans-serif`;
+        ctx.fillStyle = textColor;
+        ctx.textBaseline = 'top';
 
-      // Draw green left border
-      ctx.fillStyle = '#16a34a';
-      roundRect(ctx, boxX, boxY, 4, blockHeight, 2);
-      ctx.fill();
+        const padding = fontSize * 0.4;
+        const maxTextWidth = boxW - padding * 2;
+        const lines = wrapText(ctx, issue.proposedPhrase, maxTextWidth);
+        const lineHeight = fontSize * 1.25;
+        const totalTextHeight = lines.length * lineHeight;
 
-      // Draw text
-      ctx.fillStyle = '#15803d';
-      ctx.font = `bold ${fontSize}px Inter, system-ui, sans-serif`;
-      lines.forEach((line, idx) => {
-        ctx.fillText(line, boxX + 14, boxY + 12 + (idx + 1) * lineHeight - 4);
-      });
+        // Vertically center the text in the box
+        const startY = boxY + (boxH - totalTextHeight) / 2;
+
+        lines.forEach((line, idx) => {
+          let textX: number;
+          if (align === 'center') {
+            const lineWidth = ctx.measureText(line).width;
+            textX = boxX + (boxW - lineWidth) / 2;
+          } else if (align === 'right') {
+            const lineWidth = ctx.measureText(line).width;
+            textX = boxX + boxW - padding - lineWidth;
+          } else {
+            textX = boxX + padding;
+          }
+          ctx.fillText(line, textX, startY + idx * lineHeight);
+        });
+      } else {
+        // Fallback: use locationHint with overlay box
+        const posMap: Record<string, { x: number; y: number }> = {
+          'top-left': { x: 0.12, y: 0.1 },
+          'top-center': { x: 0.5, y: 0.1 },
+          'top-right': { x: 0.88, y: 0.1 },
+          'center-left': { x: 0.12, y: 0.5 },
+          'center': { x: 0.5, y: 0.5 },
+          'center-right': { x: 0.88, y: 0.5 },
+          'bottom-left': { x: 0.12, y: 0.88 },
+          'bottom-center': { x: 0.5, y: 0.88 },
+          'bottom-right': { x: 0.88, y: 0.88 },
+        };
+        const pos = posMap[issue.locationHint || 'center'];
+        const x = pos.x * canvas.width;
+        const y = pos.y * canvas.height;
+        const fontSize = Math.max(14, Math.min(canvas.width * 0.022, 28));
+        ctx.font = `bold ${fontSize}px Inter, Arial, sans-serif`;
+
+        const fLines = wrapText(ctx, issue.proposedPhrase, canvas.width * 0.35);
+        const fLineHeight = fontSize * 1.3;
+        const blockH = fLines.length * fLineHeight + 16;
+        const maxW = Math.max(...fLines.map(l => ctx.measureText(l).width));
+        const blockW = maxW + 24;
+        const bx = Math.max(4, Math.min(x - blockW / 2, canvas.width - blockW - 4));
+        const by = Math.max(4, Math.min(y - blockH / 2, canvas.height - blockH - 4));
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+        roundRect(ctx, bx, by, blockW, blockH, 6);
+        ctx.fill();
+        ctx.fillStyle = '#16a34a';
+        roundRect(ctx, bx, by, 4, blockH, 2);
+        ctx.fill();
+        ctx.fillStyle = '#15803d';
+        fLines.forEach((line, idx) => {
+          ctx.fillText(line, bx + 14, by + 12 + (idx + 1) * fLineHeight - 4);
+        });
+      }
     });
 
     setEditedImageUrl(canvas.toDataURL('image/png'));
@@ -172,7 +217,19 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
       newFixes.add(issueId);
     }
     setAppliedFixes(newFixes);
-    renderCanvas(newFixes);
+
+    if (newFixes.size === 0) {
+      setEditedImageUrl(imageUrl);
+    } else {
+      renderCanvas(newFixes);
+    }
+  };
+
+  const handleDownload = () => {
+    const link = document.createElement('a');
+    link.download = 'compliance-fixed-creative.png';
+    link.href = editedImageUrl;
+    link.click();
   };
 
   const displayUrl = appliedFixes.size > 0 ? editedImageUrl : imageUrl;
@@ -181,7 +238,6 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
     <div className="space-y-5">
       {/* Summary Bar */}
       <div className="grid grid-cols-4 gap-3">
-        {/* Compliance Score */}
         <div className={`${compliance.bg} border border-border rounded-md p-4`}>
           <p className="text-xs text-muted-foreground mb-1">Compliance Score</p>
           <div className="flex items-baseline gap-2 mb-2">
@@ -193,14 +249,12 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
           <ScoreBar score={result.complianceScore} />
         </div>
 
-        {/* Reading Level */}
         <div className="bg-card border border-border rounded-md p-4">
           <p className="text-xs text-muted-foreground mb-1">Reading Level</p>
           <p className="text-2xl font-bold text-foreground">{result.readingLevel}</p>
           <p className="text-xs text-muted-foreground mt-1">Flesch-Kincaid</p>
         </div>
 
-        {/* Clarity Score */}
         <div className={`${clarity.bg} border border-border rounded-md p-4`}>
           <p className="text-xs text-muted-foreground mb-1">Clarity Score</p>
           <div className="flex items-baseline gap-2 mb-2">
@@ -212,7 +266,6 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
           <ScoreBar score={result.clarityScore} />
         </div>
 
-        {/* Issues Summary */}
         <div className="bg-card border border-border rounded-md p-4">
           <p className="text-xs text-muted-foreground mb-1">Issues Found</p>
           <p className="text-2xl font-bold text-foreground">{result.issues.length}</p>
@@ -254,18 +307,26 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
         )}
       </div>
 
-      {/* Applied fixes indicator */}
+      {/* Applied fixes bar */}
       {appliedFixes.size > 0 && (
         <div className="bg-green-50 border border-green-200 rounded-md px-4 py-2.5 flex items-center justify-between">
           <p className="text-sm text-green-700">
             <span className="font-medium">{appliedFixes.size} fix{appliedFixes.size !== 1 ? 'es' : ''}</span> applied to preview
           </p>
-          <button
-            onClick={() => { setAppliedFixes(new Set()); setEditedImageUrl(imageUrl); }}
-            className="text-xs text-green-700 hover:text-green-900 font-medium underline"
-          >
-            Reset all
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleDownload}
+              className="text-xs text-green-700 hover:text-green-900 font-medium underline"
+            >
+              Download edited image
+            </button>
+            <button
+              onClick={() => { setAppliedFixes(new Set()); setEditedImageUrl(imageUrl); }}
+              className="text-xs text-green-700 hover:text-green-900 font-medium underline"
+            >
+              Reset all
+            </button>
+          </div>
         </div>
       )}
 
@@ -278,7 +339,7 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
               <p className="text-sm font-medium text-foreground">Creative Preview</p>
               {appliedFixes.size > 0 && (
                 <span className="text-xs text-green-600 font-medium">
-                  {appliedFixes.size} fix{appliedFixes.size !== 1 ? 'es' : ''} shown
+                  {appliedFixes.size} fix{appliedFixes.size !== 1 ? 'es' : ''} applied
                 </span>
               )}
             </div>
@@ -288,30 +349,27 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
                 alt="Uploaded creative"
                 className="w-full rounded border border-border"
               />
-              {/* Issue markers */}
-              {result.issues.map((issue) => {
+              {/* Issue markers — only show for unfixed issues */}
+              {result.issues.filter(i => !appliedFixes.has(i.id)).map((issue) => {
                 const pos = MARKER_CSS_POSITIONS[issue.locationHint || 'center'];
-                const isFixed = appliedFixes.has(issue.id);
                 return (
                   <button
                     key={issue.id}
                     onClick={() => setSelectedIssue(selectedIssue === issue.id ? null : issue.id)}
                     className={`absolute ${pos} w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center cursor-pointer transition-all hover:scale-110 ${
-                      isFixed
-                        ? 'bg-green-500 text-white'
-                        : issue.severity === 'high'
+                      issue.severity === 'high'
                         ? 'bg-red-500 text-white'
                         : issue.severity === 'medium'
                         ? 'bg-amber-500 text-white'
                         : 'bg-blue-500 text-white'
                     } ${selectedIssue === issue.id ? 'ring-2 ring-offset-2 ring-foreground scale-110' : ''}`}
                   >
-                    {isFixed ? '✓' : issue.id}
+                    {issue.id}
                   </button>
                 );
               })}
             </div>
-            {/* Hidden canvas for image editing */}
+            {/* Hidden canvas */}
             <canvas ref={canvasRef} className="hidden" />
           </div>
 
@@ -328,9 +386,9 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
                   onClick={() => setSelectedIssue(selectedIssue === issue.id ? null : issue.id)}
                   className={`bg-card border rounded-md p-4 cursor-pointer transition-colors ${
                     selectedIssue === issue.id ? 'border-primary ring-1 ring-primary' : 'border-border hover:border-muted-foreground/30'
-                  } ${isFixed ? 'opacity-60' : ''}`}
+                  }`}
                 >
-                  {/* Header row: marker + badges */}
+                  {/* Header */}
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <span className={`w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 ${
                       isFixed ? 'bg-green-500 text-white'
@@ -338,7 +396,7 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
                       : issue.severity === 'medium' ? 'bg-amber-500 text-white'
                       : 'bg-blue-500 text-white'
                     }`}>
-                      {isFixed ? '✓' : issue.id}
+                      {isFixed ? '\u2713' : issue.id}
                     </span>
                     <span className={`text-xs px-1.5 py-0.5 rounded border ${SEVERITY_STYLES[issue.severity]}`}>
                       {issue.severity}
@@ -350,18 +408,15 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
                     )}
                   </div>
 
-                  {/* UDAAP reference */}
                   <p className="text-xs text-muted-foreground mb-1">{issue.udaapReference}</p>
 
-                  {/* Excerpt */}
                   <p className="text-sm font-medium text-foreground mb-1">
                     &ldquo;{issue.excerpt}&rdquo;
                   </p>
 
-                  {/* Explanation */}
                   <p className="text-sm text-muted-foreground mb-3">{issue.explanation}</p>
 
-                  {/* Suggestion */}
+                  {/* Recommendation */}
                   <div className="bg-muted/50 border border-border rounded p-2.5 mb-2">
                     <p className="text-xs text-muted-foreground font-medium mb-0.5">Recommendation</p>
                     <p className="text-sm text-foreground">{issue.suggestion}</p>
@@ -369,10 +424,10 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
 
                   {/* Proposed phrase + Use button */}
                   {issue.proposedPhrase && (
-                    <div className={`border rounded p-2.5 ${isFixed ? 'bg-green-50 border-green-300' : 'bg-green-50 border-green-200'}`}>
+                    <div className={`border rounded p-2.5 ${isFixed ? 'bg-green-100 border-green-400' : 'bg-green-50 border-green-200'}`}>
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs text-green-700 font-medium mb-0.5">Proposed alternative</p>
+                          <p className="text-xs text-green-700 font-medium mb-0.5">Proposed replacement</p>
                           <p className="text-sm text-green-800">&ldquo;{issue.proposedPhrase}&rdquo;</p>
                         </div>
                         <button
@@ -386,7 +441,7 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
                               : 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-300'
                           }`}
                         >
-                          {isFixed ? 'Applied' : 'Use'}
+                          {isFixed ? 'Undo' : 'Use'}
                         </button>
                       </div>
                     </div>

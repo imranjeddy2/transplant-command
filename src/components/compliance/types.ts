@@ -7,6 +7,21 @@ export type RiskCategory =
   | 'Unsubstantiated Claims'
   | 'Puffery';
 
+export interface BoundingBox {
+  x: number;      // 0-1, left edge as fraction of image width
+  y: number;      // 0-1, top edge as fraction of image height
+  width: number;  // 0-1, width as fraction of image width
+  height: number; // 0-1, height as fraction of image height
+}
+
+export interface TextStyle {
+  textColor: string;       // hex color of original text, e.g. "#FFFFFF"
+  backgroundColor: string; // hex color behind the text, e.g. "#1A3B5C"
+  fontSize: 'small' | 'medium' | 'large' | 'xlarge'; // relative to image
+  fontWeight: 'normal' | 'bold';
+  textAlign: 'left' | 'center' | 'right';
+}
+
 export interface ComplianceIssue {
   id: number;
   severity: 'high' | 'medium' | 'low';
@@ -15,6 +30,8 @@ export interface ComplianceIssue {
   udaapReference: string;
   location: string;
   locationHint?: 'top-left' | 'top-center' | 'top-right' | 'center-left' | 'center' | 'center-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
+  boundingBox?: BoundingBox;
+  textStyle?: TextStyle;
   excerpt: string;
   explanation: string;
   suggestion: string;

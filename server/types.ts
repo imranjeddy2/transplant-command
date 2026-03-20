@@ -114,6 +114,21 @@ export type RiskCategory =
   | 'Unsubstantiated Claims'
   | 'Puffery';
 
+export interface BoundingBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface TextStyle {
+  textColor: string;
+  backgroundColor: string;
+  fontSize: 'small' | 'medium' | 'large' | 'xlarge';
+  fontWeight: 'normal' | 'bold';
+  textAlign: 'left' | 'center' | 'right';
+}
+
 export interface ComplianceIssue {
   id: number;
   severity: 'high' | 'medium' | 'low';
@@ -122,6 +137,8 @@ export interface ComplianceIssue {
   udaapReference: string;
   location: string;
   locationHint?: 'top-left' | 'top-center' | 'top-right' | 'center-left' | 'center' | 'center-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
+  boundingBox?: BoundingBox;
+  textStyle?: TextStyle;
   excerpt: string;
   explanation: string;
   suggestion: string;

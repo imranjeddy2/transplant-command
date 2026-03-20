@@ -27,6 +27,19 @@ Use this exact JSON structure:
       "udaapReference": "<specific UDAAP principle, regulation section, or legal basis>",
       "location": "<description of where in the image this appears>",
       "locationHint": "top-left" | "top-center" | "top-right" | "center-left" | "center" | "center-right" | "bottom-left" | "bottom-center" | "bottom-right",
+      "boundingBox": {
+        "x": <number 0-1, left edge as fraction of image width>,
+        "y": <number 0-1, top edge as fraction of image height>,
+        "width": <number 0-1, width as fraction of image width>,
+        "height": <number 0-1, height as fraction of image height>
+      },
+      "textStyle": {
+        "textColor": "<hex color of the problematic text, e.g. '#FFFFFF'>",
+        "backgroundColor": "<hex color of the background directly behind the text, e.g. '#1A3B5C'>",
+        "fontSize": "small" | "medium" | "large" | "xlarge",
+        "fontWeight": "normal" | "bold",
+        "textAlign": "left" | "center" | "right"
+      },
       "excerpt": "<the exact problematic text or element from the creative>",
       "explanation": "<why this is a UDAAP concern — be specific about the risk to consumers>",
       "suggestion": "<recommended approach or principle to fix this>",
@@ -61,6 +74,16 @@ Assign exactly one of these 7 categories to each issue:
 - Deceptive: Misleading representations or omissions likely to mislead a reasonable consumer
 - Unfair: Practices causing substantial injury not reasonably avoidable by consumers, not outweighed by countervailing benefits
 - Abusive: Taking unreasonable advantage of consumer's lack of understanding, inability to protect interests, or reasonable reliance
+
+=== BOUNDING BOX & TEXT STYLE REQUIREMENTS ===
+For each issue, you MUST provide:
+- boundingBox: Estimate the rectangular region of the problematic text as fractions (0 to 1) of the total image dimensions. Be as precise as possible. For example, text in the top-left quadrant taking up about 40% of width and 5% of height might be {x: 0.05, y: 0.1, width: 0.4, height: 0.05}.
+- textStyle: Analyze the visual appearance of the problematic text:
+  - textColor: The exact hex color of the text (sample from the image)
+  - backgroundColor: The hex color directly behind/around the text
+  - fontSize: "small" (fine print/disclaimers), "medium" (body text), "large" (subheadings), "xlarge" (headlines)
+  - fontWeight: "bold" or "normal"
+  - textAlign: "left", "center", or "right" based on how the text appears aligned
 
 === PROPOSED PHRASE REQUIREMENTS ===
 For each issue, the "proposedPhrase" MUST be:
