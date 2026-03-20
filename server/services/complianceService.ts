@@ -14,6 +14,12 @@ CRITICAL: Return ONLY raw JSON — no markdown, no code blocks, no explanation. 
 Use this exact JSON structure:
 
 {
+  "creative": {
+    "company": "<company or brand name detected in the creative>",
+    "product": "<specific product or service being advertised>",
+    "industry": "<industry sector, e.g. Banking, Insurance, Fintech, Lending, Credit Cards>",
+    "marketingChannel": "<detected channel type, e.g. Email, Direct Mail, Banner Ad, Landing Page, Social Media Ad, Print Flyer, SMS>"
+  },
   "complianceScore": <number 1-5>,
   "readingLevel": "<e.g. Grade 8, Grade 12, College>",
   "clarityScore": <number 1-5>,

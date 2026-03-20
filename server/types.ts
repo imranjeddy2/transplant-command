@@ -145,7 +145,15 @@ export interface ComplianceIssue {
   proposedPhrase: string;
 }
 
+export interface CreativeIntelligence {
+  company: string;
+  product: string;
+  industry: string;
+  marketingChannel: string;
+}
+
 export interface ComplianceAnalysisResult {
+  creative: CreativeIntelligence;
   complianceScore: number;
   readingLevel: string;
   clarityScore: number;

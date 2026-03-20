@@ -136,6 +136,31 @@ export function ComplianceResults({ result, imageUrl }: ComplianceResultsProps) 
 
   return (
     <div className="space-y-5">
+      {/* Creative Intelligence */}
+      {result.creative && (
+        <div className="bg-card border border-border rounded-md p-4">
+          <p className="text-xs font-medium text-muted-foreground mb-3">Detected Creative</p>
+          <div className="grid grid-cols-4 gap-4">
+            <div>
+              <p className="text-xs text-muted-foreground">Company</p>
+              <p className="text-sm font-medium text-foreground">{result.creative.company}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Product</p>
+              <p className="text-sm font-medium text-foreground">{result.creative.product}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Industry</p>
+              <p className="text-sm font-medium text-foreground">{result.creative.industry}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Channel</p>
+              <p className="text-sm font-medium text-foreground">{result.creative.marketingChannel}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Summary Bar */}
       <div className="grid grid-cols-4 gap-3">
         <div className={`${compliance.bg} border border-border rounded-md p-4`}>
