@@ -6,6 +6,7 @@ import path from 'path';
 import { config } from 'dotenv';
 import callsRouter from './routes/calls.js';
 import webhooksRouter from './routes/webhooks.js';
+import complianceRouter from './routes/compliance.js';
 
 // Load environment variables
 config();
@@ -31,6 +32,7 @@ app.use((req, _res, next) => {
 // Routes
 app.use('/api/calls', callsRouter);
 app.use('/api/webhooks', webhooksRouter);
+app.use('/api/compliance', complianceRouter);
 
 // Demo reset routes (mounted at root level for convenience)
 app.post('/api/demo/reset', (_req, res) => {
@@ -80,6 +82,7 @@ app.listen(PORT, () => {
   console.log(`  GET  /api/calls/patient/:patientId - Get all calls for a patient`);
   console.log(`  POST /api/webhooks/vapi - Vapi end-of-call webhook`);
   console.log(`  POST /api/webhooks/retell - Retell end-of-call webhook`);
+  console.log(`  POST /api/compliance/analyze - UDAAP compliance analysis`);
   console.log(`  POST /api/demo/reset - Reset demo data`);
   console.log(`  GET  /api/health - Health check`);
 

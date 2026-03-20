@@ -1,7 +1,9 @@
-import { NavLink } from 'react-router-dom';
-import { Home, ClipboardList, Users, BarChart3, Search, PhoneCall, Activity } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { Home, ClipboardList, Users, BarChart3, Search, PhoneCall, Activity, Shield, ChevronDown } from 'lucide-react';
+import { useApp, type AppId } from '@/context/AppContext';
 
-const navItems = [
+const transplantNav = [
   { to: '/', icon: Home, label: 'Home' },
   { to: '/tasks', icon: ClipboardList, label: 'Tasks' },
   { to: '/patients', icon: Users, label: 'Patients' },
@@ -9,7 +11,41 @@ const navItems = [
   { to: '/analytics', icon: BarChart3, label: 'Analytics' },
 ];
 
+const complianceNav = [
+  { to: '/compliance', icon: Shield, label: 'UDAAP Analysis' },
+];
+
+const APP_CONFIG: Record<AppId, { label: string; icon: typeof Activity; nav: typeof transplantNav }> = {
+  transplant: { label: 'Transplant Bridge', icon: Activity, nav: transplantNav },
+  compliance: { label: 'Compliance Bridge', icon: Shield, nav: complianceNav },
+};
+
 export function Sidebar() {
+  const { activeApp, setActiveApp } = useApp();
+  const navigate = useNavigate();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const config = APP_CONFIG[activeApp];
+  const navItems = config.nav;
+  const AppIcon = config.icon;
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const switchApp = (app: AppId) => {
+    setActiveApp(app);
+    setDropdownOpen(false);
+    navigate(app === 'compliance' ? '/compliance' : '/');
+  };
+
   const openCommandPalette = () => {
     const event = new KeyboardEvent('keydown', {
       key: 'k',
@@ -21,16 +57,43 @@ export function Sidebar() {
 
   return (
     <aside className="w-64 bg-sidebar text-sidebar-foreground flex flex-col h-screen fixed left-0 top-0">
-      {/* Logo */}
-      <div className="p-6 border-b border-sidebar-border">
-        <div className="flex items-center gap-2.5">
+      {/* App Selector */}
+      <div className="p-6 border-b border-sidebar-border" ref={dropdownRef}>
+        <button
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+          className="flex items-center gap-2.5 w-full group"
+        >
           <div className="w-8 h-8 bg-sidebar-primary rounded flex items-center justify-center flex-shrink-0">
-            <Activity className="h-4 w-4 text-white" />
+            <AppIcon className="h-4 w-4 text-white" />
           </div>
-          <h1 className="text-base font-semibold tracking-tight text-sidebar-foreground">
-            Transplant Command
+          <h1 className="text-base font-semibold tracking-tight text-sidebar-foreground flex-1 text-left">
+            {config.label}
           </h1>
-        </div>
+          <ChevronDown className={`h-4 w-4 text-sidebar-foreground/40 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+        </button>
+
+        {dropdownOpen && (
+          <div className="mt-2 bg-sidebar-accent border border-sidebar-border rounded-md overflow-hidden">
+            {(Object.keys(APP_CONFIG) as AppId[]).map((appId) => {
+              const appCfg = APP_CONFIG[appId];
+              const Icon = appCfg.icon;
+              return (
+                <button
+                  key={appId}
+                  onClick={() => switchApp(appId)}
+                  className={`flex items-center gap-2.5 w-full px-3 py-2.5 text-sm transition-colors ${
+                    activeApp === appId
+                      ? 'bg-sidebar-primary/20 text-sidebar-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/80 hover:text-sidebar-foreground'
+                  }`}
+                >
+                  <Icon className="h-4 w-4 flex-shrink-0" />
+                  <span>{appCfg.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Search */}
@@ -80,7 +143,7 @@ export function Sidebar() {
       {/* Footer */}
       <div className="p-4 border-t border-sidebar-border">
         <div className="flex items-center justify-between">
-          <p className="text-xs text-sidebar-foreground/40">Transplant Command</p>
+          <p className="text-xs text-sidebar-foreground/40">{config.label}</p>
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
             <span className="text-xs text-sidebar-foreground/40">Online</span>
