@@ -7,6 +7,7 @@ import { AnalyticsDashboard } from '@/components/analytics';
 import { PreEvaluationDashboard } from '@/components/pre-evaluations';
 import { SchedulingPage } from '@/components/scheduling/SchedulingPage';
 import { ComplianceDashboard } from '@/components/compliance';
+import { EpicCallback } from '@/components/epic/EpicCallback';
 import { UserProvider } from '@/context';
 import { AppProvider } from '@/context/AppContext';
 
@@ -27,6 +28,7 @@ function App() {
             </Route>
             <Route path="/tasks/:taskId" element={<TaskViewer />} />
             <Route path="/schedule/:token" element={<SchedulingPage />} />
+            <Route path="/epic" element={<EpicCallback />} />
           </Routes>
         </AppProvider>
       </BrowserRouter>

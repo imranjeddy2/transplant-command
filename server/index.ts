@@ -7,6 +7,7 @@ import { config } from 'dotenv';
 import callsRouter from './routes/calls.js';
 import webhooksRouter from './routes/webhooks.js';
 import complianceRouter from './routes/compliance.js';
+import epicRouter from './routes/epic.js';
 
 // Load environment variables
 config();
@@ -33,6 +34,7 @@ app.use((req, _res, next) => {
 app.use('/api/calls', callsRouter);
 app.use('/api/webhooks', webhooksRouter);
 app.use('/api/compliance', complianceRouter);
+app.use('/api/epic', epicRouter);
 
 // Demo reset routes (mounted at root level for convenience)
 app.post('/api/demo/reset', (_req, res) => {
